@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>一个小游戏</title>
+<title>Chromle</title>
 <style>
 	body{
 		margin: 0 auto;
@@ -151,7 +151,7 @@
 		var button_content;
 		if (!answers_bool){
 			button_content = "显示答案";
-			content = "小游戏";
+			content = "Chromle";
 		}
 		if(answers_bool){
 			for(var i=0; i<5; i++){
@@ -188,7 +188,7 @@
 	</script>
 
 	<div>
-	<h1 id="head">小游戏</h1>
+	<h1 id="head">Chromle</h1>
 	<p style="font-size: 65%">规则：一共有五个位置，每个位置会随机生成红、绿、黄、蓝、紫五种颜色之一，需要我们去猜出生成的结果是什么。
 		<br>每猜测一次，可得到两条信息：
 		<br>1、有几个位置上出现的颜色是正确的；2、有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。
