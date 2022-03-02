@@ -33,11 +33,15 @@
 
 	var answers_bool = true;
 
+	var if_success = false;
+
+	var char_color_bool = false;
+
 	refresh();
 
 
 	function choose(ID){
-	  if (nownum >= 0 && nownum < 5){
+	  if (nownum >= 0 && nownum < 5 && ! if_success){
 	    answers[nownum] = ID; 
 	    nownum += 1;
 	    var content = (round+1) + ": ";
@@ -72,17 +76,35 @@
 	  	content1 = content1+" "+colors[answers[i]];
 	  }
 	  [location_num, num_num] = match();
-	  content2 = "" + location_num + "个位置颜色正确 " + num_num + "种颜色数量正确";
+	  var content2 = "" + location_num + "个位置颜色正确 " + num_num + "种颜色数量正确";
 
 	  var Content1 = document.createTextNode(content1);
 	  var Content2 = document.createTextNode(content2);
+
+
 
 		document.getElementById("answer").appendChild(Content1);
 		document.getElementById("answer").appendChild(document.createElement("br"));
 		document.getElementById("answer").appendChild(Content2);
 		document.getElementById("answer").appendChild(document.createElement("br"));
 
-		document.getElementById("answer_region").innerHTML=(round+1) + ":";
+		var content3;
+	  var Content3;
+	  if (location_num == 5){
+	  	content3 = "Congratulations!"
+	 		Content3 = document.createTextNode(content3);
+	 		para = document.createElement("p");
+	 		para.setAttribute("style","color: red; font-size: 210%;")
+	 		para.appendChild(Content3)
+			document.getElementById("answer").appendChild(para);
+			document.getElementById("answer").appendChild(document.createElement("br"));
+			document.getElementById("answer_region").innerHTML="";
+			if_success = true;
+		}
+		else{
+			document.getElementById("answer_region").innerHTML=(round+1) + ":";
+		}
+		
 		nownum = 0;
 	}
 
@@ -96,6 +118,7 @@
 		round = 0;
 		nownum = 0;
 		answers_bool = true;
+		if_success = false;
 		document.getElementById("check_answer").innerHTML="显示答案";
 	}
 
@@ -141,6 +164,27 @@
 		answers_bool = !answers_bool;
 	}
 
+	function switch_char_color(){
+		if(char_color_bool){
+			colors = ['红', '绿', '黄', '蓝', '紫'];
+			for(var i = 0; i<5; i++){
+				document.getElementById(i).innerHTML=colors[i];
+			}
+		}
+		else{
+			colors = ['🟥', '🟩', '🟨', '🟦', '🟪'];
+			for(var i = 0; i<5; i++){
+				document.getElementById(i).innerHTML=colors[i];
+			}
+		}
+
+		var para = document.createElement("p");
+		para.setAttribute("style","color: green; font-size: 70%; margin: 0%");
+		para.appendChild(document.createTextNode("已切换颜色显示方式"));
+		document.getElementById("answer").appendChild(para);
+		char_color_bool = ! char_color_bool;
+	}
+
 	</script>
 
 	<div>
@@ -167,6 +211,7 @@
     <button onClick="refresh()">换一局</button>
     <button onClick="show_answer()" id="check_answer">显示答案</button>
   </p>
+  	<button onClick="switch_char_color()">切换颜色显示方式</button>
   </div>
 
 </body>
