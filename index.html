@@ -146,9 +146,9 @@
 					}
 
 					color_quantity = parseInt(num_string.charAt(num_string.length - 1));
-					let question_from_hash = [];
-					for (let i=color_quantity-1; i>=0; i--) {
-						question_from_hash.unshift(parseInt(num_string.charAt(i)));
+					let question_from_hash = [0,0,0,0,0,0,0,0,0];
+					for (let i = 1; i<num_string.length; i++) {
+						question_from_hash[color_quantity-i] = parseInt(num_string.charAt(num_string.length-1-i));
 						if (question_from_hash[0] >= color_quantity) {
 							color_quantity = 5;
 							throw 1;
@@ -299,32 +299,27 @@
 
 <body>
 	<div>
-	<h1 id="head">Chromle</h1>
+	<h1 id="head"></h1>
 	<div style="font-size: 30%">
-        <div id="rule1">规则：一共有5个位置，每个位置会随机生成红、绿、黄、蓝、紫五种颜色之一，需要我们去猜出生成的结果是什么。<br></div>
+        <div id="rule1"></div>
 		<div>每猜测一次，可得到两条信息：</div>
 		<ol style="font-size: 200%">
 			<li>有几个位置上出现的颜色是正确的；</li>
 			<li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li>
 		</ol>
-		<div id="rule2">如生成“红、黄、红、绿、绿”，猜测“黄、黄、蓝、绿、紫”，会出现“2个位置颜色正确 0种颜色数量正确”。<br></div>
-		<div id="rule3">出现“5个位置颜色正确”即算成功。</div>
+		<div id="rule2"></div>
+		<div id="rule3"></div>
 	</div>
 	<p id="answer"></p>
 	<p></p>
 	<p id="answer_region">1:</p>
 	<p id="buttons">
-		<button id="0" onclick="choose(this.id)">红</button>
-		<button id="1" onclick="choose(this.id)">绿</button>
-		<button id="2" onclick="choose(this.id)">黄</button>
-		<button id="3" onclick="choose(this.id)">蓝</button>
-		<button id="4" onclick="choose(this.id)">紫</button>
 	</p>
 	<p>
 		<button onclick="submit()">确定</button>
 		<button onclick="del()">删除</button>
 		<button onclick="refresh()">换一局</button>
-		<button onclick="show_answer()" id="check_answer">显示答案</button>
+		<button onclick="show_answer()" id="check_answer"></button>
 	</p>
     <p>
         <button onclick="switch_char_color()">切换颜色显示方式</button>
