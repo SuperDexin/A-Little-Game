@@ -161,7 +161,7 @@
 			if_success = false;
 			document.getElementById("check_answer").innerHTML="显示答案";
 			change_button_num();
-			//change_rules();
+			change_rules();
 		}
 
 		function match() {
@@ -229,7 +229,7 @@
 				document.getElementById("head").innerHTML=content;
 			}
 			
-			//change_rules();
+			change_rules();
 			char_color_bool = !char_color_bool;
 		}
 
@@ -311,7 +311,7 @@
         <button onclick="switch_char_color()">切换颜色显示方式</button>
     </p>
     <p>选择颜色个数
-        <select id="color_num" style="font-size: 100%" onclick="shift_color_quantity(this.value)">
+        <select id="color_num" style="font-size: 100%" onchange="shift_color_quantity(this.value)">
             <option value = "3">3</option>
             <option value = "4">4</option>
             <option value = "5" selected="selected">5</option>
