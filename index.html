@@ -30,6 +30,9 @@
 		"use strict";
 		var colors = ['红', '绿', '黄', '蓝', '紫', '橙','棕','黑','白'];
 
+		var example_question = ["红", "黄", "红", "绿", "绿", "蓝", "橙", "绿", "白"];
+        var example_answer = ["黄", "黄", "蓝", "绿", "紫", "绿", "红", "绿", "紫"];
+
 		var question = new Array(9);
 		var answers = new Array(9);
 
@@ -157,6 +160,7 @@
 			answers_bool = true;
 			if_success = false;
 			document.getElementById("check_answer").innerHTML="显示答案";
+			change_button_num();
 		}
 
 		function match() {
@@ -204,9 +208,13 @@
 		function switch_char_color() {
 			if (char_color_bool) {
 				colors = ['红', '绿', '黄', '蓝', '紫', '橙','棕','黑','白'];
+				example_question = ["红", "黄", "红", "绿", "绿", "蓝", "橙", "绿", "白"];
+        		example_answer = ["黄", "黄", "蓝", "绿", "紫", "绿", "红", "绿", "紫"];
 			}
 			else{
 				colors = ['🟥', '🟩', '🟨', '🟦', '🟪', '🟧', '🟫', '⬛', '⬜'];
+				example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
+        		example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
 			}
 			for (let i = 0; i<color_quantity; i++) {
 				document.getElementById(i).innerHTML=colors[i];
@@ -233,14 +241,27 @@
         }
 
         function change_rules(){
-        	let content = "“";
         	let i;
+        	let example_loc = [0, 0, 0, 1, 2, 2, 2, 2, 3, 3];
+        	let example_num = [0, 0, 0, 0, 1, 0, 2, 2, 2, 2];
+
+        	let content = "“";
             for(i=0; i < (color_quantity-1); i++){
             	content = content + colors[i] + "、";
             }
             content = content + colors[i] + "”";
             document.getElementById("rule1").innerHTML="规则：一共有" + color_quantity + "个位置，每个位置会随机生成" + content + color_quantity + "种颜色之一，需要我们去猜出生成的结果是什么。<br>";
-            document.getElementById("rule2").innerHTML="";
+
+            content = "如生成“";
+            for(i=0; i < (color_quantity-1); i++){
+            	content = content + example_question[i] + "、";
+            }
+            content = content + example_question[i] + "”，猜测“";
+            for(i=0; i < (color_quantity-1); i++){
+            	content = content + example_answer[i] + "、";
+            }
+            content = content + example_answer[i] + "”，会出现“" + example_loc[color_quantity] + "个位置颜色正确 " + example_num[color_quantity] + "0种颜色数量正确”。<br>";
+            document.getElementById("rule2").innerHTML=content;
             document.getElementById("rule3").innerHTML="出现“" + color_quantity + "个位置颜色正确”即算成功。";
         }
 
@@ -261,15 +282,15 @@
 <body>
 	<div>
 	<h1 id="head">Chromle</h1>
-	<div style="font-size: 60%">
-        <div id="rule1" style="font-size: 100%">规则：一共有5个位置，每个位置会随机生成红、绿、黄、蓝、紫五种颜色之一，需要我们去猜出生成的结果是什么。<br></div>
-		<div style="font-size: 100%">每猜测一次，可得到两条信息：</div>
-		<ol style="font-size: 100%">
+	<div style="font-size: 30%">
+        <div id="rule1">规则：一共有5个位置，每个位置会随机生成红、绿、黄、蓝、紫五种颜色之一，需要我们去猜出生成的结果是什么。<br></div>
+		<div>每猜测一次，可得到两条信息：</div>
+		<ol style="font-size: 200%">
 			<li>有几个位置上出现的颜色是正确的；</li>
 			<li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li>
 		</ol>
-		<div id="rule2" style="font-size: 100%">如生成“黄 紫 紫 紫 红”，猜测“黄 紫 黄 红 红”，会出现“3个位置颜色正确 0种颜色数量正确”。<br></div>
-		<div id="rule3" style="font-size: 100%">出现“5个位置颜色正确”即算成功。</div>
+		<div id="rule2">如生成“黄 紫 紫 紫 红”，猜测“黄 紫 黄 红 红”，会出现“3个位置颜色正确 0种颜色数量正确”。<br></div>
+		<div id="rule3">出现“5个位置颜色正确”即算成功。</div>
 	</div>
 	<p id="answer"></p>
 	<p></p>
