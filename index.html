@@ -47,6 +47,10 @@
 
         var color_quantity = 5;
 
+        var hash_used = false;
+
+        var is_shared = false;
+
 		function choose(ID) {
 			if (nownum >= 0 && nownum < color_quantity && !if_success) {
 				answers[nownum] = Number(ID);
@@ -104,13 +108,17 @@
 				document.getElementById("answer").appendChild(para);
 				let num = 0;
 				for (let i=0; i<color_quantity; i++) {
-					num <<= 3;
 					num += question[i];
+					num *= 10;
 				}
+				num += color_quantity;
+
+				let num_16 = num.toString(16)
+
 				const base_url = location.href.replace(location.hash, "");
 				document.getElementById("answer_region").innerHTML
 					= "如果你想和好友分享本局的问题，可以复制以下链接："
-					+ `<a href="${base_url}#${num}">${base_url}#${num}</a>`;
+					+ `<a href="${base_url}#${num_16}">${base_url}#${num_16}</a>`;
 				if_success = true;
 			}
 			else{
@@ -119,8 +127,6 @@
 
 			nownum = 0;
 		}
-
-		var hash_used = false;
 
 		function refresh() {
 			try {
@@ -131,28 +137,37 @@
 					if (location.hash === "") {
 						throw 1;
 					}
-					let num = Number(location.hash.slice(1));
+					let num16_string = location.hash.slice(1);
+					let num = parseInt(num16_string, 16);
+					let num_string = num.toString();
+
 					if (Number.isNaN(num)) {
 						throw 1;
 					}
+
+					color_quantity = num_string.charAt(num_string.length - 1);
 					let question_from_hash = [];
-					for (let i=0; i<color_quantity; i++) {
-						question_from_hash.unshift(num & 0b111);
+					for (let i=color_quantity-1; i>=0; i--) {
+						question_from_hash.unshift(parseInt(num_string.charAt(i)));
 						if (question_from_hash[0] >= color_quantity) {
+							color_quantity = 5;
 							throw 1;
 						}
-						num >>= 3;
 					}
+
+					document.getElementById("head").innerHTML="Chromle 有人想让你试试这道题";
 					question = question_from_hash;
+					is_shared = true;
+
 				}
 			}
 			catch (e) {
 				for (let i=0; i<color_quantity; i++) {
-					question[i] = Math.floor((Math.random() * color_quantity));
+					question[i] = Math.floor((Math.random() * color_quantity));	
 				}
+				document.getElementById("head").innerHTML="Chromle";
+				is_shared = false;
 			}
-
-			document.getElementById("head").innerHTML="Chromle";
 			document.getElementById("answer").innerHTML="";
 			document.getElementById("answer_region").innerHTML="1:";
 			round = 0;
@@ -193,7 +208,12 @@
 			let button_content;
 			if (!answers_bool) {
 				button_content = "显示答案";
-				content = "Chromle";
+				if(is_shared){
+					content = "Chromle 有人想让你试试这道题";
+				}
+				else{
+					content = "Chromle";
+				}
 			}
 			if (answers_bool) {
 				for (let i=0; i<color_quantity; i++) {
