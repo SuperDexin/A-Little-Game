@@ -1,3 +1,4 @@
+<script language="JavaScript" src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
 <!DOCTYPE html>
 <html>
 <head>
@@ -27,10 +28,10 @@
 
 	<script>
 		"use strict";
-		var colors = ['红', '绿', '黄', '蓝', '紫'];
+		var colors = ['红', '绿', '黄', '蓝', '紫', '橙','棕','黑','白'];
 
-		var question = new Array(5);
-		var answers = new Array(5);
+		var question = new Array(9);
+		var answers = new Array(9);
 
 		var nownum = 0;
 		var round = 0;
@@ -41,9 +42,10 @@
 
 		var char_color_bool = false;
 
+        var color_quantity = 5;
 
 		function choose(ID) {
-			if (nownum >= 0 && nownum < 5 && !if_success) {
+			if (nownum >= 0 && nownum < color_quantity && !if_success) {
 				answers[nownum] = Number(ID);
 				nownum += 1;
 				let content = (round+1) + ": ";
@@ -55,7 +57,7 @@
 		}
 
 		function del() {
-			if (nownum > 0 && nownum <= 5) {
+			if (nownum > 0 && nownum <= color_quantity) {
 				nownum -= 1;
 				let content = (round+1) + ": ";
 				for (let i=0; i<nownum; i++) {
@@ -66,7 +68,7 @@
 		}
 
 		function submit() {
-			if (nownum === 5) {
+			if (nownum === color_quantity) {
 				show();
 			}
 		}
@@ -74,7 +76,7 @@
 		function show() {
 			round++;
 			let content1 = round + ": ";
-			for (let i=0; i<5; i++) {
+			for (let i=0; i<color_quantity; i++) {
 				content1 = content1+" "+colors[answers[i]];
 			}
 			const [location_num, num_num] = match();
@@ -90,7 +92,7 @@
 
 			let content3;
 			let Content3;
-			if (location_num === 5) {
+			if (location_num === color_quantity) {
 				content3 = "Congratulations!"
 				Content3 = document.createTextNode(content3);
 				let para = document.createElement("p");
@@ -98,7 +100,7 @@
 				para.appendChild(Content3);
 				document.getElementById("answer").appendChild(para);
 				let num = 0;
-				for (let i=0; i<5; i++) {
+				for (let i=0; i<color_quantity; i++) {
 					num <<= 3;
 					num += question[i];
 				}
@@ -131,9 +133,9 @@
 						throw 1;
 					}
 					let question_from_hash = [];
-					for (let i=0; i<5; i++) {
+					for (let i=0; i<color_quantity; i++) {
 						question_from_hash.unshift(num & 0b111);
-						if (question_from_hash[0] >= 5) {
+						if (question_from_hash[0] >= color_quantity) {
 							throw 1;
 						}
 						num >>= 3;
@@ -142,8 +144,8 @@
 				}
 			}
 			catch (e) {
-				for (let i=0; i<5; i++) {
-					question[i] = Math.floor((Math.random() * 5));
+				for (let i=0; i<color_quantity; i++) {
+					question[i] = Math.floor((Math.random() * color_quantity));
 				}
 			}
 
@@ -162,7 +164,7 @@
 			let answers_color_num = count(answers);
 			let question_color_num = count(question);
 			let num_num = 0;
-			for (let i=0; i<5; i++) {
+			for (let i=0; i<color_quantity; i++) {
 				if (question[i] === answers[i]) {
 					location_num ++;
 				}
@@ -175,7 +177,7 @@
 
 		function count(array) {
 			let color_num = [0,0,0,0,0];
-			for (let i=0; i<5; i++) {
+			for (let i=0; i<color_quantity; i++) {
 				color_num[array[i]] ++;
 			}
 			return color_num;
@@ -189,7 +191,7 @@
 				content = "Chromle";
 			}
 			if (answers_bool) {
-				for (let i=0; i<5; i++) {
+				for (let i=0; i<color_quantity; i++) {
 					content = content+" "+colors[question[i]];
 				}
 				button_content = "隐藏答案";
@@ -201,44 +203,78 @@
 
 		function switch_char_color() {
 			if (char_color_bool) {
-				colors = ['红', '绿', '黄', '蓝', '紫'];
-				for (let i = 0; i<5; i++) {
-					document.getElementById(i).innerHTML=colors[i];
-				}
+				colors = ['红', '绿', '黄', '蓝', '紫', '橙','棕','黑','白'];
 			}
 			else{
-				colors = ['🟥', '🟩', '🟨', '🟦', '🟪'];
-				for (let i = 0; i<5; i++) {
-					document.getElementById(i).innerHTML=colors[i];
-				}
+				colors = ['🟥', '🟩', '🟨', '🟦', '🟪', '🟧', '🟫', '⬛', '⬜'];
+			}
+			for (let i = 0; i<color_quantity; i++) {
+				document.getElementById(i).innerHTML=colors[i];
 			}
 
-			let para = document.createElement("p");
-			para.setAttribute("style","color: green; font-size: 70%; margin: 0%");
-			para.appendChild(document.createTextNode("已切换颜色显示方式"));
-			document.getElementById("answer").appendChild(para);
+			let content = "";
+			if (!answers_bool) {
+				for (let i=0; i<color_quantity; i++) {
+					content = content+" "+colors[question[i]];
+				}
+				document.getElementById("head").innerHTML=content;
+			}
+			
+			change_rules();
 			char_color_bool = !char_color_bool;
 		}
+
+        function shift_color_quantity(value){
+        	value = parseInt(value);
+            color_quantity = value;
+            change_button_num();
+            change_rules();
+            refresh();
+        }
+
+        function change_rules(){
+        	let content = "“";
+        	let i;
+            for(i=0; i < (color_quantity-1); i++){
+            	content = content + colors[i] + "、";
+            }
+            content = content + colors[i] + "”";
+            document.getElementById("rule1").innerHTML="规则：一共有" + color_quantity + "个位置，每个位置会随机生成" + content + color_quantity + "种颜色之一，需要我们去猜出生成的结果是什么。<br>";
+            document.getElementById("rule2").innerHTML="";
+            document.getElementById("rule3").innerHTML="出现“" + color_quantity + "个位置颜色正确”即算成功。";
+        }
+
+        function change_button_num(){
+        	$("#buttons").empty();
+    		for(let i = 0; i < color_quantity; i++){
+         		let button = document.createElement("button");
+        		button.innerHTML = colors[i];
+        		button.setAttribute("id", "" + i);
+        		button.setAttribute("onClick", "choose(this.id)");
+        		document.getElementById("buttons").appendChild(button);
+    		}
+        }
+
 	</script>
 </head>
 
 <body>
 	<div>
 	<h1 id="head">Chromle</h1>
-	<div style="font-size: 65%">
-		规则：一共有五个位置，每个位置会随机生成红、绿、黄、蓝、紫五种颜色之一，需要我们去猜出生成的结果是什么。<br>
-		每猜测一次，可得到两条信息：
-		<ol>
+	<div style="font-size: 30%">
+        <div id="rule1">规则：一共有5个位置，每个位置会随机生成红、绿、黄、蓝、紫五种颜色之一，需要我们去猜出生成的结果是什么。<br></div>
+		<div>每猜测一次，可得到两条信息：</div>
+		<ol style="font-size: 200%">
 			<li>有几个位置上出现的颜色是正确的；</li>
 			<li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li>
 		</ol>
-		如生成“黄 紫 紫 紫 红”，猜测“黄 紫 黄 红 红”，会出现“3个位置颜色正确 0种颜色数量正确”。<br>
-		出现“5个位置颜色正确”即算成功。
+		<div id="rule2">如生成“黄 紫 紫 紫 红”，猜测“黄 紫 黄 红 红”，会出现“3个位置颜色正确 0种颜色数量正确”。<br></div>
+		<div id="rule3">出现“5个位置颜色正确”即算成功。</div>
 	</div>
 	<p id="answer"></p>
 	<p></p>
 	<p id="answer_region">1:</p>
-	<p>
+	<p id="buttons">
 		<button id="0" onclick="choose(this.id)">红</button>
 		<button id="1" onclick="choose(this.id)">绿</button>
 		<button id="2" onclick="choose(this.id)">黄</button>
@@ -251,7 +287,21 @@
 		<button onclick="refresh()">换一局</button>
 		<button onclick="show_answer()" id="check_answer">显示答案</button>
 	</p>
-		<button onclick="switch_char_color()">切换颜色显示方式</button>
+    <p>
+        <button onclick="switch_char_color()">切换颜色显示方式</button>
+    </p>
+    <p>选择颜色个数
+        <select id="color_num" style="font-size: 100%" onclick="shift_color_quantity(this.value)">
+            <option value = "3">3</option>
+            <option value = "4">4</option>
+            <option value = "5" selected="selected">5</option>
+            <option value = "6">6</option>
+            <option value = "7">7</option>
+            <option value = "8">8</option>
+            <option value = "9">9</option>
+        </select>
+    </p>
+
 	</div>
 	<script>
 		refresh();
