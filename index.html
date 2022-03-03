@@ -145,7 +145,7 @@
 						throw 1;
 					}
 
-					color_quantity = num_string.charAt(num_string.length - 1);
+					color_quantity = parseInt(num_string.charAt(num_string.length - 1));
 					let question_from_hash = [];
 					for (let i=color_quantity-1; i>=0; i--) {
 						question_from_hash.unshift(parseInt(num_string.charAt(i)));
@@ -158,7 +158,6 @@
 					document.getElementById("head").innerHTML="Chromle 有人想让你试试这道题";
 					question = question_from_hash;
 					is_shared = true;
-
 				}
 			}
 			catch (e) {
@@ -334,7 +333,7 @@
         <select id="color_num" style="font-size: 100%" onchange="shift_color_quantity(this.value)">
             <option value = "3">3</option>
             <option value = "4">4</option>
-            <option value = "5" selected="selected">5</option>
+            <option value = "5">5</option>
             <option value = "6">6</option>
             <option value = "7">7</option>
             <option value = "8">8</option>
