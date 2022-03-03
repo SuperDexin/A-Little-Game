@@ -17,6 +17,12 @@
 		button{
 			font-size: 200%;
 		}
+
+		@media (orientation: landscape) {
+			button{
+				font-size: 100%;
+			}
+		}
 	</style>
 
 	<script>
@@ -36,7 +42,7 @@
 
 
 	function choose(ID){
-		if (nownum >= 0 && nownum < 5 && ! if_success){
+		if (nownum >= 0 && nownum < 5 && !if_success){
 			answers[nownum] = ID;
 			nownum += 1;
 			let content = (round+1) + ": ";
@@ -87,8 +93,8 @@
 			content3 = "Congratulations!"
 			Content3 = document.createTextNode(content3);
 			let para = document.createElement("p");
-			para.setAttribute("style","color: red; font-size: 210%;")
-			para.appendChild(Content3)
+			para.setAttribute("style","color: red; font-size: 210%;");
+			para.appendChild(Content3);
 			document.getElementById("answer").appendChild(para);
 			document.getElementById("answer").appendChild(document.createElement("br"));
 			document.getElementById("answer_region").innerHTML="";
@@ -175,7 +181,7 @@
 		para.setAttribute("style","color: green; font-size: 70%; margin: 0%");
 		para.appendChild(document.createTextNode("已切换颜色显示方式"));
 		document.getElementById("answer").appendChild(para);
-		char_color_bool = ! char_color_bool;
+		char_color_bool = !char_color_bool;
 	}
 	</script>
 </head>
@@ -183,12 +189,16 @@
 <body>
 	<div>
 	<h1 id="head">Chromle</h1>
-	<p style="font-size: 65%">规则：一共有五个位置，每个位置会随机生成红、绿、黄、蓝、紫五种颜色之一，需要我们去猜出生成的结果是什么。
-		<br>每猜测一次，可得到两条信息：
-		<br>1、有几个位置上出现的颜色是正确的；2、有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。
-		<br>如生成“黄 紫 紫 紫 红”，猜测“黄 紫 黄 红 红”，会出现“3个位置颜色正确 0种颜色数量正确”。
-		<br>出现“5个位置颜色正确”即算成功。
-	</p>
+	<div style="font-size: 65%">
+		规则：一共有五个位置，每个位置会随机生成红、绿、黄、蓝、紫五种颜色之一，需要我们去猜出生成的结果是什么。<br>
+		每猜测一次，可得到两条信息：
+		<ol>
+			<li>有几个位置上出现的颜色是正确的；</li>
+			<li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li>
+		</ol>
+		如生成“黄 紫 紫 紫 红”，猜测“黄 紫 黄 红 红”，会出现“3个位置颜色正确 0种颜色数量正确”。<br>
+		出现“5个位置颜色正确”即算成功。
+	</div>
 	<p id="answer"></p>
 	<p></p>
 	<p id="answer_region">1:</p>
