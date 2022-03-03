@@ -1,27 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>Chromle</title>
-<style>
-	body{
-		margin: 0 auto;
-		width: 90%;
-	}
+	<meta charset="utf-8">
+	<title>Chromle</title>
+	<style>
+		body{
+			margin: 0 auto;
+			width: 90%;
+		}
 
-	div{
-		width: 100%;
-		font-size: 200%; 
-	}
+		div{
+			width: 100%;
+			font-size: 200%;
+		}
 
-	button{
-		font-size: 200%; 
-	}
-</style>
+		button{
+			font-size: 200%;
+		}
+	</style>
 
-</head>
-
-<body>
 	<script>
 	var colors = ['红', '绿', '黄', '蓝', '紫'];
 
@@ -37,65 +34,61 @@
 
 	var char_color_bool = false;
 
-	refresh();
-
 
 	function choose(ID){
-	  if (nownum >= 0 && nownum < 5 && ! if_success){
-	    answers[nownum] = ID; 
-	    nownum += 1;
-	    var content = (round+1) + ": ";
-	    for(var i=0; i<nownum; i++){
-	    	content = content+" "+colors[answers[i]];
-	    }
+		if (nownum >= 0 && nownum < 5 && ! if_success){
+			answers[nownum] = ID;
+			nownum += 1;
+			let content = (round+1) + ": ";
+			for(let i=0; i<nownum; i++){
+				content = content+" "+colors[answers[i]];
+			}
 			document.getElementById("answer_region").innerHTML=content;
-	  } 
+		}
 	}
 
 	function del(){
-	  if (nownum > 0 && nownum <= 5){
-	    nownum -= 1;
-	    var content = (round+1) + ": ";
-	    for(var i=0; i<nownum; i++){
-	    	content = content+" "+colors[answers[i]];
-	    }
+		if (nownum > 0 && nownum <= 5){
+			nownum -= 1;
+			let content = (round+1) + ": ";
+			for(let i=0; i<nownum; i++){
+				content = content+" "+colors[answers[i]];
+			}
 			document.getElementById("answer_region").innerHTML=content;
-	  }
+		}
 	}
 
 	function submit(){
-	  if (nownum == 5){
-	    show();
-	  }
+		if (nownum == 5){
+			show();
+		}
 	}
 
 	function show(){
 		round++;
-	  var content1 = round + ": ";
-	  for(var i=0; i<5; i++){
-	  	content1 = content1+" "+colors[answers[i]];
-	  }
-	  [location_num, num_num] = match();
-	  var content2 = "" + location_num + "个位置颜色正确 " + num_num + "种颜色数量正确";
+		let content1 = round + ": ";
+		for(let i=0; i<5; i++){
+			content1 = content1+" "+colors[answers[i]];
+		}
+		[location_num, num_num] = match();
+		let content2 = "" + location_num + "个位置颜色正确 " + num_num + "种颜色数量正确";
 
-	  var Content1 = document.createTextNode(content1);
-	  var Content2 = document.createTextNode(content2);
-
-
+		let Content1 = document.createTextNode(content1);
+		let Content2 = document.createTextNode(content2);
 
 		document.getElementById("answer").appendChild(Content1);
 		document.getElementById("answer").appendChild(document.createElement("br"));
 		document.getElementById("answer").appendChild(Content2);
 		document.getElementById("answer").appendChild(document.createElement("br"));
 
-		var content3;
-	  var Content3;
-	  if (location_num == 5){
-	  	content3 = "Congratulations!"
-	 		Content3 = document.createTextNode(content3);
-	 		para = document.createElement("p");
-	 		para.setAttribute("style","color: red; font-size: 210%;")
-	 		para.appendChild(Content3)
+		let content3;
+		let Content3;
+		if (location_num == 5){
+			content3 = "Congratulations!"
+			Content3 = document.createTextNode(content3);
+			let para = document.createElement("p");
+			para.setAttribute("style","color: red; font-size: 210%;")
+			para.appendChild(Content3)
 			document.getElementById("answer").appendChild(para);
 			document.getElementById("answer").appendChild(document.createElement("br"));
 			document.getElementById("answer_region").innerHTML="";
@@ -104,12 +97,12 @@
 		else{
 			document.getElementById("answer_region").innerHTML=(round+1) + ":";
 		}
-		
+
 		nownum = 0;
 	}
 
 	function refresh(){
-		for(var i=0; i<5; i++){
+		for(let i=0; i<5; i++){
 			question[i] = Math.floor((Math.random() * 5));
 		}
 		document.getElementById("head").innerHTML="Chromle";
@@ -123,11 +116,11 @@
 	}
 
 	function match(){
-		var location_num = 0;
-		var answers_color_num = count(answers);
-		var question_color_num = count(question);
-		var num_num = 0;
-		for(var i=0; i<5; i++){
+		let location_num = 0;
+		let answers_color_num = count(answers);
+		let question_color_num = count(question);
+		let num_num = 0;
+		for(let i=0; i<5; i++){
 			if (question[i] == answers[i]){
 				location_num ++;
 			}
@@ -139,26 +132,26 @@
 	}
 
 	function count(array){
-		var color_num = [0,0,0,0,0];
-		for(var i=0; i<5; i++){
+		let color_num = [0,0,0,0,0];
+		for(let i=0; i<5; i++){
 			color_num[array[i]] ++;
 		}
 		return color_num;
 	}
 
 	function show_answer(){
-		var content = "";
-		var button_content;
+		let content = "";
+		let button_content;
 		if (!answers_bool){
 			button_content = "显示答案";
 			content = "Chromle";
 		}
 		if(answers_bool){
-			for(var i=0; i<5; i++){
-	  		content = content+" "+colors[question[i]];
-	  	}
-	  	button_content = "隐藏答案";
-	  }
+			for(let i=0; i<5; i++){
+				content = content+" "+colors[question[i]];
+			}
+			button_content = "隐藏答案";
+		}
 		document.getElementById("head").innerHTML=content;
 		document.getElementById("check_answer").innerHTML=button_content;
 		answers_bool = !answers_bool;
@@ -167,26 +160,27 @@
 	function switch_char_color(){
 		if(char_color_bool){
 			colors = ['红', '绿', '黄', '蓝', '紫'];
-			for(var i = 0; i<5; i++){
+			for(let i = 0; i<5; i++){
 				document.getElementById(i).innerHTML=colors[i];
 			}
 		}
 		else{
 			colors = ['🟥', '🟩', '🟨', '🟦', '🟪'];
-			for(var i = 0; i<5; i++){
+			for(let i = 0; i<5; i++){
 				document.getElementById(i).innerHTML=colors[i];
 			}
 		}
 
-		var para = document.createElement("p");
+		let para = document.createElement("p");
 		para.setAttribute("style","color: green; font-size: 70%; margin: 0%");
 		para.appendChild(document.createTextNode("已切换颜色显示方式"));
 		document.getElementById("answer").appendChild(para);
 		char_color_bool = ! char_color_bool;
 	}
-
 	</script>
+</head>
 
+<body>
 	<div>
 	<h1 id="head">Chromle</h1>
 	<p style="font-size: 65%">规则：一共有五个位置，每个位置会随机生成红、绿、黄、蓝、紫五种颜色之一，需要我们去猜出生成的结果是什么。
@@ -198,23 +192,23 @@
 	<p id="answer"></p>
 	<p></p>
 	<p id="answer_region">1:</p>
-  <p>
-    <button id="0" onClick="choose(this.id)">红</button>
-    <button id="1" onClick="choose(this.id)">绿</button>
-    <button id="2" onClick="choose(this.id)">黄</button>
-    <button id="3" onClick="choose(this.id)">蓝</button>
-    <button id="4" onClick="choose(this.id)">紫</button>    
-  </p>
-  <p>
-    <button onClick="submit()">确定</button>
-    <button onClick="del()">删除</button>
-    <button onClick="refresh()">换一局</button>
-    <button onClick="show_answer()" id="check_answer">显示答案</button>
-  </p>
-  	<button onClick="switch_char_color()">切换颜色显示方式</button>
-  </div>
-
+	<p>
+		<button id="0" onClick="choose(this.id)">红</button>
+		<button id="1" onClick="choose(this.id)">绿</button>
+		<button id="2" onClick="choose(this.id)">黄</button>
+		<button id="3" onClick="choose(this.id)">蓝</button>
+		<button id="4" onClick="choose(this.id)">紫</button>
+	</p>
+	<p>
+		<button onClick="submit()">确定</button>
+		<button onClick="del()">删除</button>
+		<button onClick="refresh()">换一局</button>
+		<button onClick="show_answer()" id="check_answer">显示答案</button>
+	</p>
+		<button onClick="switch_char_color()">切换颜色显示方式</button>
+	</div>
+	<script>
+		refresh();
+	</script>
 </body>
-
-
 </html>
