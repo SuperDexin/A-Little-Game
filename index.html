@@ -362,11 +362,12 @@
         <h1 id="head"></h1>
         <div style="font-size: 30%" id="rules">
             <div id="rule1"></div>
-            <div>每猜测一次，可得到两条信息：</div>
-            <ol style="font-size: 200%">
+            <div>每猜测一次，可得到两条信息：
+            <ol>
                 <li>有几个位置上出现的颜色是正确的；</li>
                 <li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li>
             </ol>
+        	</div>
             <div id="rule2"></div>
             <div id="rule3"></div>
         </div>
@@ -394,9 +395,9 @@
 		        <p>
 		            <button onclick="share_input()">创建问题</button>
 		            <br>
-		            <span style="font-size: 70%">从当前输入的答案中创建新问题用于分享，问题的位置个数需等于当前所设定的位置个数</span>
+		            <span style="font-size: 90%">从当前输入的答案中创建新问题用于分享，问题的位置个数需等于当前所设定的位置个数</span>
 		        </p>
-		        <p style="margin: 0">
+		        <p style="margin: 0" >
 		            <label for="color_count">选择颜色个数</label>
 		            <select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
 		                <option>1</option>
@@ -424,7 +425,7 @@
 		                <option>9</option>
 		            </select>
 		        </p>
-		        <p style="margin: 0; font-size: 70%">友情提示：颜色个数与位置个数相等会比较好玩</p>
+		        <p style="margin: 0; font-size: 90%">友情提示：颜色个数与位置个数相等会比较好玩</p>
 	    	</div>
     	</p>
     </div>
