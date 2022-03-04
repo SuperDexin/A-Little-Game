@@ -342,15 +342,11 @@
 
         function more(){
         	let more_button = document.getElementById("more_button");
-        	let more_content = document.getElementById("more_content");
-
         	if(more_hidden){
-        		more_content.removeAttribute("hidden");
-        		more_button.innerHTML="▲ 收起";
+        		more_button.innerHTML="收起";
         	}
         	else{
-        		more_content.setAttribute("hidden", "hidden");
-        		more_button.innerHTML="▼ 更多";
+        		more_button.innerHTML="更多";
         	}
 
         	more_hidden = !more_hidden;
@@ -383,54 +379,60 @@
             <button onclick="refresh()">换一局</button>
             <button onclick="show_answer()" id="check_answer"></button>
         </p>
-        <p>
-        	<div style="padding: 0px; font-size: 70%">
-        	<button onclick="more()" id="more_button">▼ 更多</button>
-        	</div>
-	        <div style="width: 90%; padding: 10px; border: 1px solid; border-color: black; font-size: 70%;" id="more_content" hidden="hidden">
+        <details>
+        	<summary onclick="more()" id="more_button">更多</summary>
+        	<div style="width: 90%; padding: 10px; border: 1px solid; border-color: black; font-size: 70%;">
 		        <p style="margin: 0px">
 		            <button onclick="switch_char_color()" style="margin-right: 20px;">切换颜色显示方式</button>
 		            <button onclick="show_rules()" id="check_rules">收起规则</button>
 		        </p>
-		        <p>
+		        <p style="margin-bottom: 0;">
 		            <button onclick="share_input()">创建问题</button>
-		            <br>
-		            <span style="font-size: 90%">从当前输入的答案中创建新问题用于分享，问题的位置个数需等于当前所设定的位置个数</span>
 		        </p>
-		        <p style="margin: 0" >
-		            <label for="color_count">选择颜色个数</label>
-		            <select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
-		                <option>1</option>
-		                <option>2</option>
-		                <option>3</option>
-		                <option>4</option>
-		                <option>5</option>
-		                <option>6</option>
-		                <option>7</option>
-		                <option>8</option>
-		                <option>9</option>
-		            </select>
-		        </p>
-		        <p style="margin: 0">
-		            <label for="position_count">选择位置个数</label>
-		            <select id="position_count" style="font-size: 100%" onchange="set_position_count(this.value)">
-		                <option>1</option>
-		                <option>2</option>
-		                <option>3</option>
-		                <option>4</option>
-		                <option>5</option>
-		                <option>6</option>
-		                <option>7</option>
-		                <option>8</option>
-		                <option>9</option>
-		            </select>
-		        </p>
-		        <p style="margin: 0; font-size: 90%">友情提示：颜色个数与位置个数相等会比较好玩</p>
+		        <p style="margin-top: 0; font-size: 90%">从当前输入的答案中创建新问题用于分享，问题的位置个数需等于当前所设定的位置个数</p>
+		        <div>
+			        <p style="margin-bottom: 0;" >
+			            <label for="color_count">选择颜色个数</label>
+			            <select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
+			                <option>1</option>
+			                <option>2</option>
+			                <option>3</option>
+			                <option>4</option>
+			                <option>5</option>
+			                <option>6</option>
+			                <option>7</option>
+			                <option>8</option>
+			                <option>9</option>
+			            </select>
+			        </p>
+			        <p style="margin: 0">
+			            <label for="position_count">选择位置个数</label>
+			            <select id="position_count" style="font-size: 100%" onchange="set_position_count(this.value)">
+			                <option>1</option>
+			                <option>2</option>
+			                <option>3</option>
+			                <option>4</option>
+			                <option>5</option>
+			                <option>6</option>
+			                <option>7</option>
+			                <option>8</option>
+			                <option>9</option>
+			            </select>
+			        </p>
+			    </div>
+			    <p style="margin: 0; font-size: 90%">友情提示：颜色个数与位置个数相等会比较好玩</p>
+
 	    	</div>
-    	</p>
+        </details>
     </div>
     <script>
         refresh();
+        {
+        	let para = document.getElementById("rules");
+        	para.setAttribute("hidden", "hidden");
+        	para.removeAttribute("hidden");
+        }
+
     </script>
 </body>
 </html>
