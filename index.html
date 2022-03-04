@@ -52,6 +52,8 @@
 
         let is_shared = false;
 
+        let is_WeChat = navigator.userAgent.toLowerCase().match(/MicroMessenger/i) === "micromessenger";
+
         const base_url = location.href.replace(location.hash === "" ? "#" : location.hash, "");
 
         function choose(ID) {
@@ -124,9 +126,17 @@
                 document.getElementById("answer").appendChild(para);
                 let num16_string = array_to_num16_string(question);
                 document.getElementById("answer_region").innerHTML = "";
-                document.getElementById("share").innerHTML
-                    = "如果你想和好友分享本局的问题，可以复制以下链接："
-                    + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`;
+                if(is_WeChat){
+	                document.getElementById("share").innerHTML
+	                    = "如果你想和好友分享本局的问题，可以复制以下链接："
+	                    + `${base_url}#${num16_string}`; 
+                }
+                else{
+	                document.getElementById("share").innerHTML
+	                    = "如果你想和好友分享本局的问题，可以复制以下链接："
+	                    + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`; 
+                }
+
                 if_success = true;
             }
             else {
@@ -139,9 +149,17 @@
         function share_input() {
             if (now_num === position_count) {
                 let num16_string = array_to_num16_string(answers);
-                document.getElementById("share").innerHTML
-                    = "复制以下链接即可和好友分享以刚才输入的答案为答案的问题："
-                    + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`;
+                if(is_WeChat){
+                	document.getElementById("share").innerHTML
+                    = "复制以下链接即可和好友分享以刚才输入的内容为答案的问题："
+                    + `${base_url}#${num16_string}`;
+                }
+                else{
+                	document.getElementById("share").innerHTML
+                    = "复制以下链接即可和好友分享以刚才输入的内容为答案的问题："
+                    + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`;	
+                }
+                
             }
         }
 
@@ -378,7 +396,7 @@
         </p>
         <details>
         	<summary onclick="more()" id="more_button">更多</summary>
-        	<div style="width: 90%; padding: 10px; border: 1px solid; border-color: black; font-size: 70%;">
+        	<div style="width: 100%; padding: 10px; border: 1px solid; border-color: black; font-size: 70%; margin-bottom:50px">
 		        <p style="margin: 0px">
 		            <button onclick="switch_char_color()" style="margin-right: 20px;">切换颜色显示方式</button>
 		            <button onclick="show_rules()" id="check_rules">收起规则</button>
