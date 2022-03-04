@@ -52,7 +52,7 @@
 
         let is_shared = false;
 
-        let is_WeChat = navigator.userAgent.toLowerCase().match(/MicroMessenger/i) === "micromessenger";
+        let is_WeChat = navigator.userAgent.toLowerCase().match(/MicroMessenger/i) == "micromessenger";
 
         const base_url = location.href.replace(location.hash === "" ? "#" : location.hash, "");
 
