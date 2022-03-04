@@ -316,6 +316,8 @@
             content2 = content2 + example_answer[i] + "”，会出现“" + example_pos[position_count] + "个位置颜色正确 " + example_num[position_count] + "种颜色数量正确”。";
             document.getElementById("rule2").innerHTML=content2;
             document.getElementById("rule3").innerHTML="出现“" + position_count + "个位置颜色正确”即算成功。";
+
+            document.getElementById("rule1_5").innerHTML="每猜测一次，可得到两条信息：<ol><li>有几个位置上出现的颜色是正确的；</li><li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li></ol>"
         }
 
         function set_buttons(){
@@ -358,12 +360,7 @@
         <h1 id="head"></h1>
         <div style="font-size: 30%" id="rules">
             <div id="rule1"></div>
-            <div>每猜测一次，可得到两条信息：
-            <ol>
-                <li>有几个位置上出现的颜色是正确的；</li>
-                <li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li>
-            </ol>
-        	</div>
+            <div id="rule1_5"></div>
             <div id="rule2"></div>
             <div id="rule3"></div>
         </div>
@@ -389,7 +386,7 @@
 		        <p style="margin-bottom: 0;">
 		            <button onclick="share_input()">创建问题</button>
 		        </p>
-		        <p style="margin-top: 0; font-size: 90%">从当前输入的答案中创建新问题用于分享，问题的位置个数需等于当前所设定的位置个数</p>
+		        <p style="margin-top: 0; font-size: 100%">从当前输入的答案中创建新问题用于分享，问题的位置个数需等于当前所设定的位置个数</p>
 		        <div>
 			        <p style="margin-bottom: 0;" >
 			            <label for="color_count">选择颜色个数</label>
@@ -420,18 +417,18 @@
 			            </select>
 			        </p>
 			    </div>
-			    <p style="margin: 0; font-size: 90%">友情提示：颜色个数与位置个数相等会比较好玩</p>
+			    <p style="margin: 0; font-size: 100%">友情提示：颜色个数与位置个数相等会比较好玩</p>
 
 	    	</div>
         </details>
     </div>
     <script>
         refresh();
-        {
-        	let para = document.getElementById("rules");
-        	para.setAttribute("hidden", "hidden");
-        	para.removeAttribute("hidden");
-        }
+        // {
+        // 	let para = document.getElementById("rules");
+        // 	para.setAttribute("hidden", "hidden");
+        // 	para.removeAttribute("hidden");
+        // }
 
     </script>
 </body>
