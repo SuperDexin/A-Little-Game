@@ -27,10 +27,9 @@
     <link rel="icon" href="favicon.ico">
     <script>
         "use strict";
-        let colors = ['红', '绿', '黄', '蓝', '紫', '橙','棕','黑','白'];
-
-        let example_question = ["红", "黄", "红", "绿", "绿", "蓝", "橙", "绿", "白"];
-        let example_answer = ["黄", "黄", "蓝", "绿", "紫", "绿", "红", "绿", "紫"];
+        let colors = ['🟥', '🟩', '🟨', '🟦', '🟪', '🟧', '🟫', '⬛', '⬜'];
+        let example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
+        let example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
 
         let question = new Array(9);
         let answers = new Array(9);
@@ -39,10 +38,12 @@
         let round = 0;
 
         let answer_hidden = true;
+        let rule_hidden = false;
+        let more_hidden = true;
 
         let if_success = false;
 
-        let char_color_bool = false;
+        let char_color_bool = true;
 
         let color_count = 5;
         let position_count = 5;
@@ -322,12 +323,44 @@
                 (val, idx) => `<button id="${idx}" onclick="choose(${idx})">${val}</button>`
             ).join(" ");
         }
+
+        function show_rules(){
+			let rule_elememt = document.getElementById("rules");
+			let rule_button = document.getElementById("check_rules");
+
+        	if(rule_hidden){
+        		rule_elememt.removeAttribute("hidden");
+        		rule_button.innerHTML="收起规则";
+        	}
+        	else{
+        		rule_elememt.setAttribute("hidden", "hidden");
+        		rule_button.innerHTML="显示规则";
+        	}
+
+        	rule_hidden = !rule_hidden;
+        }
+
+        function more(){
+        	let more_button = document.getElementById("more_button");
+        	let more_content = document.getElementById("more_content");
+
+        	if(more_hidden){
+        		more_content.removeAttribute("hidden");
+        		more_button.innerHTML="▲ 收起";
+        	}
+        	else{
+        		more_content.setAttribute("hidden", "hidden");
+        		more_button.innerHTML="▼ 更多";
+        	}
+
+        	more_hidden = !more_hidden;
+        }
     </script>
 </head>
 <body>
     <div>
         <h1 id="head"></h1>
-        <div style="font-size: 30%">
+        <div style="font-size: 30%" id="rules">
             <div id="rule1"></div>
             <div>每猜测一次，可得到两条信息：</div>
             <ol style="font-size: 200%">
@@ -350,37 +383,50 @@
             <button onclick="show_answer()" id="check_answer"></button>
         </p>
         <p>
-            <button onclick="switch_char_color()">切换颜色显示方式</button>
-            <button onclick="share_input()">从当前输入的答案中手动创建问题</button>
-        </p>
-        <p>
-            <label for="color_count">选择颜色个数</label>
-            <select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-                <option>6</option>
-                <option>7</option>
-                <option>8</option>
-                <option>9</option>
-            </select>
-        </p>
-        <p>
-            <label for="position_count">选择位置个数</label>
-            <select id="position_count" style="font-size: 100%" onchange="set_position_count(this.value)">
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-                <option>6</option>
-                <option>7</option>
-                <option>8</option>
-                <option>9</option>
-            </select>
-        </p>
+        	<div style="padding: 0px; font-size: 70%">
+        	<button onclick="more()" id="more_button">▼ 更多</button>
+        	</div>
+	        <div style="width: 90%; padding: 10px; border: 1px solid; border-color: black; font-size: 70%;" id="more_content" hidden="hidden">
+		        <p style="margin: 0px">
+		            <button onclick="switch_char_color()" style="margin-right: 20px;">切换颜色显示方式</button>
+		            <button onclick="show_rules()" id="check_rules">收起规则</button>
+		        </p>
+		        <p>
+		            <button onclick="share_input()">创建问题</button>
+		            <br>
+		            <span style="font-size: 70%">从当前输入的答案中创建新问题用于分享，问题的位置个数需等于当前所设定的位置个数</span>
+		        </p>
+		        <p style="margin: 0">
+		            <label for="color_count">选择颜色个数</label>
+		            <select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
+		                <option>1</option>
+		                <option>2</option>
+		                <option>3</option>
+		                <option>4</option>
+		                <option>5</option>
+		                <option>6</option>
+		                <option>7</option>
+		                <option>8</option>
+		                <option>9</option>
+		            </select>
+		        </p>
+		        <p style="margin: 0">
+		            <label for="position_count">选择位置个数</label>
+		            <select id="position_count" style="font-size: 100%" onchange="set_position_count(this.value)">
+		                <option>1</option>
+		                <option>2</option>
+		                <option>3</option>
+		                <option>4</option>
+		                <option>5</option>
+		                <option>6</option>
+		                <option>7</option>
+		                <option>8</option>
+		                <option>9</option>
+		            </select>
+		        </p>
+		        <p style="margin: 0; font-size: 70%">友情提示：颜色个数与位置个数相等会比较好玩</p>
+	    	</div>
+    	</p>
     </div>
     <script>
         refresh();
