@@ -334,8 +334,6 @@
             content2 = content2 + example_answer[i] + "”，会出现“" + example_pos[position_count] + "个位置颜色正确 " + example_num[position_count] + "种颜色数量正确”。";
             document.getElementById("rule2").innerHTML=content2;
             document.getElementById("rule3").innerHTML="出现“" + position_count + "个位置颜色正确”即算成功。";
-
-            document.getElementById("rule1_5").innerHTML="每猜测一次，可得到两条信息：<ol><li>有几个位置上出现的颜色是正确的；</li><li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li></ol>"
         }
 
         function set_buttons(){
@@ -371,6 +369,18 @@
 
         	more_hidden = !more_hidden;
         }
+
+        function ban_double_click(){ //禁止双击放大页面
+        	let lastTouchEnd = 0;
+			document.documentElement.addEventListener('touchend', function (event) {
+				let now = Date.now();
+				if (now - lastTouchEnd <= 300) {
+					event.preventDefault();
+				}
+				  lastTouchEnd = now;
+			}, false);
+        }
+
     </script>
 </head>
 <body>
@@ -395,7 +405,7 @@
             <button onclick="show_answer()" id="check_answer"></button>
         </p>
         <details>
-        	<summary onclick="more()" id="more_button">更多</summary>
+        	<summary onclick="more()" id="more_button"></summary>
         	<div style="width: 100%; padding: 10px; border: 1px solid; border-color: black; font-size: 70%; margin-bottom:50px">
 		        <p style="margin: 0px">
 		            <button onclick="switch_char_color()" style="margin-right: 20px;">切换颜色显示方式</button>
@@ -441,6 +451,9 @@
         </details>
     </div>
     <script>
+    	ban_double_click();
+    	document.getElementById("more_button").innerHTML="更多";
+    	document.getElementById("rule1_5").innerHTML="每猜测一次，可得到两条信息：<ol><li>有几个位置上出现的颜色是正确的；</li><li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li></ol>"
         refresh();
         // {
         // 	let para = document.getElementById("rules");
