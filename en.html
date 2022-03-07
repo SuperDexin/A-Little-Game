@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Chromle</title>
+    <style>
+        body {
+            margin: 0 auto;
+            width: 90%;
+        }
+
+        div {
+            width: 100%;
+            font-size: 200%;
+        }
+
+        button {
+            font-size: 200%;
+        }
+
+        @media (orientation: landscape) {
+            button {
+                font-size: 100%;
+            }
+        }
+    </style>
+    <link rel="icon" href="favicon.ico">
+    <script>
+        "use strict";
+        let colors = ['🟥', '🟩', '🟨', '🟦', '🟪', '🟧', '🟫', '⬛', '⬜'];
+        let example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
+        let example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
+
+        let question = new Array(9);
+        let answers = new Array(9);
+
+        let now_num = 0;
+        let round = 0;
+
+        let answer_hidden = true;
+        let rule_hidden = false;
+        let more_hidden = true;
+
+        let if_success = false;
+
+        let char_color_bool = true;
+
+        let color_count = 5;
+        let position_count = 5;
+
+        let hash_used = false;
+
+        let is_shared = false;
+
+        let is_WeChat = navigator.userAgent.toLowerCase().match(/MicroMessenger/i) == "micromessenger";
+
+        const base_url = location.href.replace(location.hash === "" ? "#" : location.hash, "");
+
+        function choose(ID) {
+            if (now_num < position_count && !if_success) {
+                answers[now_num] = ID;
+                now_num += 1;
+                let content = (round+1) + ": ";
+                for (let i=0; i<now_num; i++) {
+                    content = content+" "+colors[answers[i]];
+                }
+                document.getElementById("answer_region").innerHTML=content;
+            }
+        }
+
+        function del() {
+            if (now_num > 0) {
+                now_num -= 1;
+                let content = (round+1) + ": ";
+                for (let i=0; i<now_num; i++) {
+                    content = content+" "+colors[answers[i]];
+                }
+                document.getElementById("answer_region").innerHTML=content;
+            }
+        }
+
+        function submit() {
+            if (now_num === position_count) {
+                show();
+            }
+        }
+
+        function array_to_num16_string(array) {
+            let num = 0;
+            for (let i = 0; i < position_count; i++) {
+                num += array[i];
+                num *= 10;
+            }
+            num += color_count;
+            num *= 10;
+            num += position_count;
+
+            return num.toString(16);
+        }
+
+        function show() {
+            document.getElementById("share").innerHTML = "";
+
+            round++;
+            let content1 = round + ": ";
+            for (let i=0; i<position_count; i++) {
+                content1 = content1+" "+colors[answers[i]];
+            }
+            const [position_num, num_num] = match();
+            let content2 = "" + position_num + "position(s) is/are correct. " + num_num + "colour(s) has/have a correct amount.";
+
+            let Content1 = document.createTextNode(content1);
+            let Content2 = document.createTextNode(content2);
+
+            document.getElementById("answer").appendChild(Content1);
+            document.getElementById("answer").appendChild(document.createElement("br"));
+            document.getElementById("answer").appendChild(Content2);
+            document.getElementById("answer").appendChild(document.createElement("br"));
+
+            if (position_num === position_count) {
+                let content3 = "Congratulations!"
+                let Content3 = document.createTextNode(content3);
+                let para = document.createElement("p");
+                para.setAttribute("style","color: red; font-size: 210%;");
+                para.appendChild(Content3);
+                document.getElementById("answer").appendChild(para);
+                let num16_string = array_to_num16_string(question);
+                document.getElementById("answer_region").innerHTML = "";
+                if(is_WeChat){
+	                document.getElementById("share").innerHTML
+	                    = "Copy and send this link to your friend to share the current question: "
+	                    + `${base_url}#${num16_string}`; 
+                }
+                else{
+	                document.getElementById("share").innerHTML
+	                    = "Copy and send this link to your friend to share the current question: "
+	                    + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`; 
+                }
+
+                if_success = true;
+            }
+            else {
+                document.getElementById("answer_region").innerHTML=(round+1) + ":";
+            }
+
+            now_num = 0;
+        }
+
+        function share_input() {
+            if (now_num === position_count) {
+                let num16_string = array_to_num16_string(answers);
+                if(is_WeChat){
+                	document.getElementById("share").innerHTML
+                    = "Copy and send this link to your friend to share a question and its answer is what you entered: "
+                    + `${base_url}#${num16_string}`;
+                }
+                else{
+                	document.getElementById("share").innerHTML
+                    = "Copy and send this link to your friend to share a question and its answer is what you entered: "
+                    + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`;	
+                }
+                
+            }
+        }
+
+        function refresh() {
+            try {
+                if (hash_used) {
+                    throw 1;
+                } else {
+                    hash_used = true;
+
+                    if (location.hash === "") {
+                        throw 1;
+                    }
+
+                    let num16_string = location.hash.slice(1);
+                    let num = parseInt(num16_string, 16);
+                    let num_string = num.toString();
+                    if (Number.isNaN(num) || num_string.length < 2) {
+                        throw 1;
+                    }
+
+                    position_count = parseInt(num_string.charAt(num_string.length - 1));
+                    color_count = parseInt(num_string.charAt(num_string.length - 2));
+                    if (position_count === 0 || color_count === 0) {
+                        color_count = 5;
+                        position_count = 5;
+                        throw 1;
+                    }
+
+                    let question_from_hash = [0,0,0,0,0,0,0,0,0];
+                    for (let i = 1; i<=num_string.length-2; i++) {
+                        question_from_hash[position_count-i] = parseInt(num_string.charAt(num_string.length-2-i));
+                        if (question_from_hash[position_count-i] >= color_count) {
+                            color_count = 5;
+                            position_count = 5;
+                            throw 1;
+                        }
+                    }
+
+                    document.getElementById("head").innerHTML="Chromle  Someone wants to test you this question.";
+                    question = question_from_hash;
+                    is_shared = true;
+                }
+            }
+            catch (e) {
+                for (let i=0; i<position_count; i++) {
+                    question[i] = Math.floor((Math.random() * color_count));
+                }
+                document.getElementById("head").innerHTML="Chromle";
+                is_shared = false;
+            }
+            document.getElementById("answer").innerHTML="";
+            document.getElementById("answer_region").innerHTML="1:";
+            document.getElementById("share").innerHTML = "";
+            round = 0;
+            now_num = 0;
+            answer_hidden = true;
+            if_success = false;
+            document.getElementById("check_answer").innerHTML="Show Answer";
+            document.getElementById("color_count").children[color_count - 1].setAttribute("selected", "");
+            document.getElementById("position_count").children[position_count - 1].setAttribute("selected", "");
+            set_buttons();
+            set_rules();
+        }
+
+        function match() {
+            let position_num = 0;
+            let answers_color_num = count(answers);
+            let question_color_num = count(question);
+            let num_num = 0;
+            for (let i=0; i<position_count; i++) {
+                if (question[i] === answers[i]) {
+                    position_num ++;
+                }
+                if ((answers_color_num[i] === question_color_num[i]) && (answers_color_num[i] !== 0)) {
+                    num_num++;
+                }
+            }
+            return [position_num, num_num];
+        }
+
+        function count(array) {
+            let color_num = [0,0,0,0,0,0,0,0,0];
+            for (let i=0; i<position_count; i++) {
+                color_num[array[i]] ++;
+            }
+            return color_num;
+        }
+
+        function show_answer() {
+            let content = "";
+            let button_content;
+            if (!answer_hidden) {
+                if(is_shared){
+                    content = "Chromle  Someone wants to test you this question.";
+                }
+                else {
+                    content = "Chromle";
+                }
+                button_content = "Show Answer";
+            }
+            if (answer_hidden) {
+                for (let i=0; i<position_count; i++) {
+                    content = content+" "+colors[question[i]];
+                }
+                button_content = "Hide Answer";
+            }
+            document.getElementById("head").innerHTML=content;
+            document.getElementById("check_answer").innerHTML=button_content;
+            answer_hidden = !answer_hidden;
+        }
+
+        function switch_char_color() {
+            if (char_color_bool) {
+                colors = ['Red', 'Green', 'Yellow', 'Blue', 'Purple', 'Orange','Brown','black','White'];
+                example_question = ["Red", "Yellow", "Red", "Green", "Green", "Blue", "Orange", "Green", "White"];
+                example_answer = ["Yellow", "Yellow", "Blue", "Green", "Purple", "Green", "Red", "Green", "Purple"];
+            }
+            else {
+                colors = ['🟥', '🟩', '🟨', '🟦', '🟪', '🟧', '🟫', '⬛', '⬜'];
+                example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
+                example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
+            }
+            for (let i = 0; i<color_count; i++) {
+                document.getElementById(i.toString()).innerHTML=colors[i];
+            }
+
+            let content = "";
+            if (!answer_hidden) {
+                for (let i=0; i<position_count; i++) {
+                    content = content+" "+colors[question[i]];
+                }
+                document.getElementById("head").innerHTML=content;
+            }
+
+            set_rules();
+            char_color_bool = !char_color_bool;
+        }
+
+        function set_color_count(value){
+            value = parseInt(value);
+            color_count = value;
+            refresh();
+        }
+
+        function set_position_count(value){
+            value = parseInt(value);
+            position_count = value;
+            refresh();
+        }
+
+        function set_rules(){
+            let i;
+            let example_pos = [0, 0, 0, 1, 2, 2, 2, 2, 3, 3];
+            let example_num = [0, 0, 0, 0, 1, 0, 2, 2, 2, 2];
+
+            let content1 = "\"";
+            for(i=0; i < (color_count-1); i++){
+                content1 = content1 + colors[i] + ", ";
+            }
+            content1 = content1 + colors[i] + "\"";
+            document.getElementById("rule1").innerHTML="Rule: There is/are " + position_count + " place(s) in total. In every place，one of the colours of " + content1 + color_count + " will be generated randomly. We need to figure out what the generated result is.";
+
+            let content2 = "If it generates \"";
+            for(i=0; i < (position_count-1); i++){
+                content2 = content2 + example_question[i] + ", ";
+            }
+            content2 = content2 + example_question[i] + "\", and we guess \"";
+            for(i=0; i < (position_count-1); i++){
+                content2 = content2 + example_answer[i] + ", ";
+            }
+            content2 = content2 + example_answer[i] + "\". There will show: \"" + example_pos[position_count] + "position(s) is/are correct. " + example_num[position_count] + "colour(s) has/have a correct amount\".";
+            document.getElementById("rule2").innerHTML=content2;
+            document.getElementById("rule3").innerHTML="You will be successful if there is \"" + position_count + "position(s) is/are correct\".";
+        }
+
+        function set_buttons(){
+            document.getElementById("buttons").innerHTML = colors.slice(0, color_count).map(
+                (val, idx) => `<button id="${idx}" onclick="choose(${idx})">${val}</button>`
+            ).join(" ");
+        }
+
+        function show_rules(){
+			let rule_elememt = document.getElementById("rules");
+			let rule_button = document.getElementById("check_rules");
+
+        	if(rule_hidden){
+        		rule_elememt.removeAttribute("hidden");
+        		rule_button.innerHTML="Hide Rules";
+        	}
+        	else{
+        		rule_elememt.setAttribute("hidden", "hidden");
+        		rule_button.innerHTML="Show Rules";
+        	}
+
+        	rule_hidden = !rule_hidden;
+        }
+
+        function more(){
+        	let more_button = document.getElementById("more_button");
+        	if(more_hidden){
+        		more_button.innerHTML="Hide";
+        	}
+        	else{
+        		more_button.innerHTML="More";
+        	}
+
+        	more_hidden = !more_hidden;
+        }
+
+        function ban_double_click(){ //禁止双击放大页面
+        	let lastTouchEnd = 0;
+			document.documentElement.addEventListener('touchend', function (event) {
+				let now = Date.now();
+				if (now - lastTouchEnd <= 300) {
+					event.preventDefault();
+				}
+				  lastTouchEnd = now;
+			}, false);
+        }
+
+    </script>
+</head>
+<body>
+    <div>
+        <h1 id="head"></h1>
+        <div style="font-size: 30%" id="rules">
+            <div id="rule1"></div>
+            <div id="rule1_5"></div>
+            <div id="rule2"></div>
+            <div id="rule3"></div>
+        </div>
+        <p id="answer"></p>
+        <p></p>
+        <p id="answer_region">1:</p>
+        <p id="share"></p>
+        <p id="buttons">
+        </p>
+        <p>
+            <button onclick="submit()">Submit</button>
+            <button onclick="del()">Delete</button>
+            <button onclick="refresh()">New Game</button>
+            <button onclick="show_answer()" id="check_answer"></button>
+        </p>
+        <details>
+        	<summary onclick="more()" id="more_button"></summary>
+        	<div style="width: 100%; padding: 10px; border: 1px solid; border-color: black; font-size: 70%; margin-bottom:50px">
+		        <p style="margin: 0px">
+		            <button onclick="switch_char_color()" style="margin-right: 20px;">Shift the colour mode</button>In characters or emojis
+		            <button onclick="show_rules()" id="check_rules">Hide Rules</button>
+		        </p>
+		        <p style="margin-bottom: 0;">
+		            <button onclick="share_input()">Make A Question</button>
+		        </p>
+		        <p style="margin-top: 0; font-size: 100%">Create a new question from the currently entered answer for sharing. The number of places of the question must be equal to the number of places amount currently set.</p>
+		        <div>
+			        <p style="margin-bottom: 0;" >
+			            <label for="color_count">Colour Amount</label>
+			            <select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
+			                <option>1</option>
+			                <option>2</option>
+			                <option>3</option>
+			                <option>4</option>
+			                <option>5</option>
+			                <option>6</option>
+			                <option>7</option>
+			                <option>8</option>
+			                <option>9</option>
+			            </select>
+			        </p>
+			        <p style="margin: 0">
+			            <label for="position_count">Place Amount</label>
+			            <select id="position_count" style="font-size: 100%" onchange="set_position_count(this.value)">
+			                <option>1</option>
+			                <option>2</option>
+			                <option>3</option>
+			                <option>4</option>
+			                <option>5</option>
+			                <option>6</option>
+			                <option>7</option>
+			                <option>8</option>
+			                <option>9</option>
+			            </select>
+			        </p>
+			    </div>
+			    <p style="margin: 0; font-size: 100%">Tip: It will be more interesting is the Colour Amount is equal to the Place Amount.</p>
+
+	    	</div>
+        </details>
+    </div>
+    <script>
+    	ban_double_click();
+    	document.getElementById("more_button").innerHTML="More";
+    	document.getElementById("rule1_5").innerHTML="Each time you guess, you get two pieces of information:<ol><li>How many places you have guessed a correct color;</li><li>How many colours you have guessed a correct amount. (Except the colour with an amount 0)</li></ol>"
+        refresh();
+        // {
+        // 	let para = document.getElementById("rules");
+        // 	para.setAttribute("hidden", "hidden");
+        // 	para.removeAttribute("hidden");
+        // }
+
+    </script>
+</body>
+</html>
