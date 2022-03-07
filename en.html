@@ -54,7 +54,7 @@
 
         let is_WeChat = navigator.userAgent.toLowerCase().match(/MicroMessenger/i) == "micromessenger";
 
-        const base_url = location.href.replace(location.hash === "" ? "#" : location.hash, "");
+        const base_url = location.href.respot(location.hash === "" ? "#" : location.hash, "");
 
         function choose(ID) {
             if (now_num < position_count && !if_success) {
@@ -107,8 +107,8 @@
                 content1 = content1+" "+colors[answers[i]];
             }
             const [position_num, num_num] = match();
-            let content2 = "" + position_num + " place(s) with a correct colour.";
-            let content3 = "" + num_num + " colour(s) in a correct amount.";
+            let content2 = "" + position_num + " spot(s) with the correct colour.";
+            let content3 = "" + num_num + " colour(s) in the correct amount.";
 
             let Content1 = document.createTextNode(content1);
             let Content2 = document.createTextNode(content2);
@@ -324,7 +324,7 @@
                 content1 = content1 + colors[i] + ", ";
             }
             content1 = content1 + colors[i] + "\"";
-            document.getElementById("rule1").innerHTML="Rule: There are " + position_count + " places in total. In every place, one of the " + color_count + " colours of " + content1 + " will be generated randomly. We need to figure out what the generated result is.";
+            document.getElementById("rule1").innerHTML="Rule: There are " + position_count + " spots in total. In every spot, one of the " + color_count + " colours of " + content1 + " will be generated randomly. We need to figure out what the generated result is.";
 
             let content2 = "For example, if it generates \"";
             for(i=0; i < (position_count-1); i++){
@@ -334,9 +334,9 @@
             for(i=0; i < (position_count-1); i++){
                 content2 = content2 + example_answer[i] + ", ";
             }
-            content2 = content2 + example_answer[i] + "\", it will show: \"" + example_pos[position_count] + " place(s) with a correct colour. " + example_num[position_count] + " colour(s) in a correct amount\".";
+            content2 = content2 + example_answer[i] + "\", it will show \"" + example_pos[position_count] + " spot(s) with the correct colour. " + example_num[position_count] + " colour(s) in the correct amount\".";
             document.getElementById("rule2").innerHTML=content2;
-            document.getElementById("rule3").innerHTML="You will be successful if there is \"" + position_count + " place(s) with a correct colour\".";
+            document.getElementById("rule3").innerHTML="When it shows \"" + position_count + " spot(s) with the correct colour, you win!";
         }
 
         function set_buttons(){
@@ -393,7 +393,7 @@
             <div id="rule1"></div>
             <div id="rule1_5"></div>
             <div id="rule2"></div>
-            <div id="rule3"></div>
+            <div id="rule3" style="font-weight: bold;"></div>
         </div>
         <p id="answer"></p>
         <p></p>
@@ -417,10 +417,10 @@
 		        <p style="margin-bottom: 0;">
 		            <button onclick="share_input()">Make A Question</button>
 		        </p>
-		        <p style="margin-top: 0; font-size: 100%">Create a new question from the currently entered answer for sharing. The number of places of the question must be equal to the number of places amount currently set.</p>
+		        <p style="margin-top: 0; font-size: 100%">Create a new question from the currently entered answer for sharing. The number of spots of the question must be equal to the number of spots currently set.</p>
 		        <div>
 			        <p style="margin-bottom: 0;" >
-			            <label for="color_count">Colour Amount</label>
+			            
 			            <select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
 			                <option>1</option>
 			                <option>2</option>
@@ -432,9 +432,10 @@
 			                <option>8</option>
 			                <option>9</option>
 			            </select>
+                        <label for="color_count">colours</label>
 			        </p>
 			        <p style="margin: 0">
-			            <label for="position_count">Place Amount</label>
+			            
 			            <select id="position_count" style="font-size: 100%" onchange="set_position_count(this.value)">
 			                <option>1</option>
 			                <option>2</option>
@@ -446,9 +447,10 @@
 			                <option>8</option>
 			                <option>9</option>
 			            </select>
+                        <label for="position_count">spots</label>
 			        </p>
 			    </div>
-			    <p style="margin: 0; font-size: 100%">Tip: It will be more interesting that the Colour Amount is equal to the Place Amount.</p>
+			    <p style="margin: 0; font-size: 100%">Tip: It will be more interesting that the number of colours is equal to the number of spots.</p>
 
 	    	</div>
         </details>
@@ -456,7 +458,7 @@
     <script>
     	ban_double_click();
     	document.getElementById("more_button").innerHTML="More";
-    	document.getElementById("rule1_5").innerHTML="Each time you guessing, you get two pieces of information:<ol><li>How many places you have guessed a correct color;</li><li>How many colours you have guessed a correct amount. (Except the colour with an amount 0)</li></ol>"
+    	document.getElementById("rule1_5").innerHTML="Every time you guess, you will get two pieces of information:<ol><li>The number of spots with the correct answer;</li><li>The number of colours in the correct amount. (Except the colour with an amount 0)</li></ol>";
         refresh();
         // {
         // 	let para = document.getElementById("rules");
