@@ -58,8 +58,7 @@
 
         let answers_memory = [];
 
-        let is_pos_col_sym = 1;
-
+        let is_pos_col_sym = 1; //1 相同，0 不同
         function choose(ID) {
             if (now_num < position_count && !if_success) {
                 answers[now_num] = ID;
@@ -239,7 +238,9 @@
             if_success = false;
             document.getElementById("check_answer").innerHTML="显示答案";
             document.getElementById("color_count").children[color_count - 1].setAttribute("selected", "");
-            document.getElementById("position_count").children[position_count - 1].setAttribute("selected", "");
+            if(!is_pos_col_sym){
+    	        document.getElementById("position_count").children[position_count - 1].setAttribute("selected", "");
+            }
             set_buttons();
             set_rules();
             answers_memory = [];
@@ -430,7 +431,6 @@
         		}
         		else{
         			document.getElementById("position_count_select").removeAttribute("hidden");
-        			position_count = document.getElementById("position_count_select").value;
         		}
 
         		refresh();
@@ -486,7 +486,7 @@
 			                <option>2</option>
 			                <option>3</option>
 			                <option>4</option>
-			                <option selected>5</option>
+			                <option>5</option>
 			                <option>6</option>
 			                <option>7</option>
 			                <option>8</option>
@@ -500,7 +500,7 @@
 			                <option>2</option>
 			                <option>3</option>
 			                <option>4</option>
-			                <option selected>5</option>
+			                <option>5</option>
 			                <option>6</option>
 			                <option>7</option>
 			                <option>8</option>
