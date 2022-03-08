@@ -58,6 +58,8 @@
 
         let answers_memory = [];
 
+        let is_pos_col_sym = 1;
+
         function choose(ID) {
             if (now_num < position_count && !if_success) {
                 answers[now_num] = ID;
@@ -146,7 +148,7 @@
 	               //  content_when_success = content_when_success + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`; 
                 // }
 
-                content_for_sharing = content_for_sharing + `${base_url}#${num16_string}` + "\r打开链接和我玩同一局试试吧";
+                content_for_sharing = content_for_sharing + `${base_url}#${num16_string}` + "\r打开链接，你也试试这道题吧";
 
                 let content_when_success_tail = "</div><button id=\"copy_btn\" style=\"margin-top:0px\">点我分享此题</button>";
 
@@ -320,6 +322,9 @@
         function set_color_count(value){
             value = parseInt(value);
             color_count = value;
+            if(is_pos_col_sym){
+            	position_count = color_count;
+            }
             refresh();
         }
 
@@ -408,10 +413,29 @@
 			    input.select();
 			    if (document.execCommand('copy')) {
 			        document.execCommand('copy');
-			        alert("已复制以下内容到剪粘板：\r----------\r" + text +"\r----------\r去发送给你的小伙伴吧！");
+			        alert("已复制以下内容到剪粘板：\r----------\r" + text +"\r----------\r去发送给你的小伙伴吧");
 			    }
 			 	document.body.removeChild(input);
 			})
+        }
+
+        function position_colour_count_synchronize(value){
+        	value = parseInt(value);
+
+        	if(value !== is_pos_col_sym){
+        		is_pos_col_sym = value;
+
+        		if(is_pos_col_sym){
+        			document.getElementById("position_count_select").setAttribute("hidden", "hidden");
+        		}
+        		else{
+        			document.getElementById("position_count_select").removeAttribute("hidden");
+        			position_count = document.getElementById("position_count_select").value;
+        		}
+
+        		refresh();
+        	}
+        	
         }
 
     </script>
@@ -449,28 +473,34 @@
 		        </p>
 		        <p style="margin-top: 0; font-size: 100%">从当前输入的答案中创建新问题用于分享，问题的位置个数需等于当前所设定的位置个数</p>
 		        <div>
-			        <p style="margin-bottom: 0;" >
+		        	<div  style="margin-bottom: 0; font-size: 70%">
+		        		<input type="radio" name="bind_amounts" checked="checked" value="1" id="same" onclick="position_colour_count_synchronize(this.value)">
+		        		<label for="same">颜色数与位置数相同（默认)</label>
+		        		<input type="radio" name="bind_amounts" value="0" id="diff" onclick="position_colour_count_synchronize(this.value)">
+		        		<label for="diff">颜色数与位置数不同</label>
+		        	</div>
+			        <p style="margin: 0;" >
 			            <label for="color_count">选择颜色个数</label>
 			            <select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
 			                <option>1</option>
 			                <option>2</option>
 			                <option>3</option>
 			                <option>4</option>
-			                <option>5</option>
+			                <option selected>5</option>
 			                <option>6</option>
 			                <option>7</option>
 			                <option>8</option>
 			                <option>9</option>
 			            </select>
 			        </p>
-			        <p style="margin: 0">
+			        <p style="margin: 0" id="position_count_select" hidden="hidden">
 			            <label for="position_count">选择位置个数</label>
 			            <select id="position_count" style="font-size: 100%" onchange="set_position_count(this.value)">
 			                <option>1</option>
 			                <option>2</option>
 			                <option>3</option>
 			                <option>4</option>
-			                <option>5</option>
+			                <option selected>5</option>
 			                <option>6</option>
 			                <option>7</option>
 			                <option>8</option>
