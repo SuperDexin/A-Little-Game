@@ -56,6 +56,8 @@
 
         const base_url = location.href.replace(location.hash === "" ? "#" : location.hash, "");
 
+        let answers_memory = [];
+
         function choose(ID) {
             if (now_num < position_count && !if_success) {
                 answers[now_num] = ID;
@@ -117,6 +119,8 @@
             document.getElementById("answer").appendChild(Content2);
             document.getElementById("answer").appendChild(document.createElement("br"));
 
+            answers_memory.push([position_num, num_num]);
+
             if (position_num === position_count) {
                 let content3 = "Congratulations!"
                 let Content3 = document.createTextNode(content3);
@@ -126,18 +130,31 @@
                 document.getElementById("answer").appendChild(para);
                 let num16_string = array_to_num16_string(question);
                 document.getElementById("answer_region").innerHTML = "";
-                if(is_WeChat){
-	                document.getElementById("share").innerHTML
-	                    = "如果你想和好友分享本局的问题，可以复制以下链接："
-	                    + `${base_url}#${num16_string}`; 
-                }
-                else{
-	                document.getElementById("share").innerHTML
-	                    = "如果你想和好友分享本局的问题，可以复制以下链接："
-	                    + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`; 
+
+                let content_when_success_head = "<div id=\"sharing_text\" style=\"border: 1px solid; border-color: black; width: 100%; font-size: 100%; padding: 10px; margin-bottom: 0px\">";
+                let content_when_success = "你用了" + round +"步解决了此题<br>";
+                let content_for_sharing = "我用了" + round +"步解决了此题\r";
+                for(let i = 0; i<round; i++){
+                	content_when_success = content_when_success + (i+1) + ": " + answers_memory[i][0] + " " + answers_memory[i][1] + "<br>";
+                	content_for_sharing = content_for_sharing + (i+1) + ": " + answers_memory[i][0] + " " + answers_memory[i][1] + "\r";
                 }
 
+                // if(is_WeChat){
+	               //  content_when_success = content_when_success + `${base_url}#${num16_string}`; 
+                // }
+                // else{
+	               //  content_when_success = content_when_success + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`; 
+                // }
+
+                content_for_sharing = content_for_sharing + `${base_url}#${num16_string}` + "\r打开链接和我玩同一局试试吧";
+
+                let content_when_success_tail = "</div><button id=\"copy_btn\" style=\"margin-top:0px\">点我分享此题</button>";
+
+                document.getElementById("share").innerHTML = content_when_success_head + content_when_success + content_when_success_tail;
+
                 if_success = true;
+
+                copy_for_sharing(content_for_sharing);
             }
             else {
                 document.getElementById("answer_region").innerHTML=(round+1) + ":";
@@ -223,6 +240,7 @@
             document.getElementById("position_count").children[position_count - 1].setAttribute("selected", "");
             set_buttons();
             set_rules();
+            answers_memory = [];
         }
 
         function match() {
@@ -379,6 +397,21 @@
 				}
 				  lastTouchEnd = now;
 			}, false);
+        }
+
+        function copy_for_sharing(text){
+        	const copy_btn = document.querySelector('#copy_btn');
+			copy_btn.addEventListener('click',() => {
+			    const input = document.createElement("textarea");
+			    document.body.appendChild(input);
+			    input.innerHTML=text;
+			    input.select();
+			    if (document.execCommand('copy')) {
+			        document.execCommand('copy');
+			        alert("已复制以下内容到剪粘板：\r----------\r" + text +"\r----------\r去发送给你的小伙伴吧！");
+			    }
+			 	document.body.removeChild(input);
+			})
         }
 
     </script>
