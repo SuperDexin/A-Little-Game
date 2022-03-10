@@ -1,529 +1,524 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Chromle</title>
-    <style>
-        body {
-            margin: 0 auto;
-            width: 90%;
-        }
+	<meta charset="utf-8">
+	<title>Chromle</title>
+	<style>
+		body {
+			margin: 0 auto;
+			width: 90%;
+		}
 
-        div {
-            width: 100%;
-            font-size: 200%;
-        }
+		div {
+			font-size: 200%;
+		}
 
-        button {
-            font-size: 200%;
-        }
+		button {
+			font-size: 200%;
+			touch-action: manipulation;
+		}
 
-        @media (orientation: landscape) {
-            button {
-                font-size: 100%;
-            }
-        }
-    </style>
-    <link rel="icon" href="favicon.ico">
-    <script>
-        "use strict";
-        let colors = ['🟥', '🟩', '🟨', '🟦', '🟪', '🟧', '🟫', '⬛', '⬜'];
-        let example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
-        let example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
+		@media (orientation: landscape) {
+			button {
+				font-size: 100%;
+			}
+		}
 
-        let question = new Array(9);
-        let answers = new Array(9);
+		details:not([open]) > summary::after {
+			content: "更多";
+		}
 
-        let now_num = 0;
-        let round = 0;
+		details[open] > summary::after {
+			content: "收起";
+		}
+	</style>
+	<link rel="icon" href="favicon.ico">
+	<script>
+		"use strict";
+		let colors = ["🟥", "🟩", "🟨", "🟦", "🟪", "🟧", "🟫", "⬛", "⬜"];
+		let example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
+		let example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
 
-        let answer_hidden = true;
-        let rule_hidden = false;
-        let more_hidden = true;
+		let question = new Array(9);
+		let answers = new Array(9);
+		let answers_memory = [];
 
-        let if_success = false;
+		let color_count = 5;
+		let spot_count = 5;
 
-        let char_color_bool = true;
+		let now_num = 0;
+		let round = 0;
 
-        let color_count = 5;
-        let position_count = 5;
+		let answer_hidden = true;
 
-        let hash_used = false;
+		let if_success = false;
 
-        let is_shared = false;
+		let use_emoji_color = true;
 
-        let is_WeChat = navigator.userAgent.toLowerCase().match(/MicroMessenger/i) == "micromessenger";
+		let hash_used = false;
 
-        const base_url = location.href.replace(location.hash === "" ? "#" : location.hash, "");
+		let is_shared = false;
 
-        let answers_memory = [];
+		let is_WeChat = navigator.userAgent.match(/MicroMessenger/i) !== null;
 
-        let is_pos_col_sym = 1; //1 相同，0 不同
-        function choose(ID) {
-            if (now_num < position_count && !if_success) {
-                answers[now_num] = ID;
-                now_num += 1;
-                let content = (round+1) + ": ";
-                for (let i=0; i<now_num; i++) {
-                    content = content+" "+colors[answers[i]];
-                }
-                document.getElementById("answer_region").innerHTML=content;
-            }
-        }
+		const base_url = location.href.replace(location.hash === "" ? "#" : location.hash, "");
 
-        function del() {
-            if (now_num > 0) {
-                now_num -= 1;
-                let content = (round+1) + ": ";
-                for (let i=0; i<now_num; i++) {
-                    content = content+" "+colors[answers[i]];
-                }
-                document.getElementById("answer_region").innerHTML=content;
-            }
-        }
+		let is_spot_col_sync = true; //记录位置数量和颜色数量是否同步
 
-        function submit() {
-            if (now_num === position_count) {
-                show();
-            }
-        }
+		let start_time, finish_time;
 
-        function array_to_num16_string(array) {
-            let num = 0;
-            for (let i = 0; i < position_count; i++) {
-                num += array[i];
-                num *= 10;
-            }
-            num += color_count;
-            num *= 10;
-            num += position_count;
+		function choose(ID) {
+			if (now_num < spot_count && !if_success) {
+				answers[now_num] = ID;
+				now_num += 1;
+				let content = (round + 1) + ": ";
+				for (let i = 0; i < now_num; i++) {
+					content += " " + colors[answers[i]];
+				}
+				document.getElementById("answer_region").innerHTML = content;
+			}
+		}
 
-            return num.toString(16);
-        }
+		function del() {
+			if (now_num > 0) {
+				now_num -= 1;
+				let content = (round + 1) + ": ";
+				for (let i = 0; i < now_num; i++) {
+					content += " " + colors[answers[i]];
+				}
+				document.getElementById("answer_region").innerHTML = content;
+			}
+		}
 
-        function show() {
-            document.getElementById("share").innerHTML = "";
+		function submit() {
+			finish_time = Date.now();
+			if (now_num === spot_count) {
+				show();
+			}
+		}
 
-            round++;
-            let content1 = round + ": ";
-            for (let i=0; i<position_count; i++) {
-                content1 = content1+" "+colors[answers[i]];
-            }
-            const [position_num, num_num] = match();
-            let content2 = "" + position_num + "个位置颜色正确 " + num_num + "种颜色数量正确";
+		function count(array) {
+			let color_num = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+			for (let i = 0; i < spot_count; i++) {
+				color_num[array[i]]++;
+			}
+			return color_num;
+		}
 
-            let Content1 = document.createTextNode(content1);
-            let Content2 = document.createTextNode(content2);
+		function match() {
+			let spot_num = 0;
+			let answers_color_num = count(answers);
+			let question_color_num = count(question);
+			let num_num = 0;
+			for (let i = 0; i < spot_count; i++) {
+				if (question[i] === answers[i]) {
+					spot_num++;
+				}
+				if ((answers_color_num[i] === question_color_num[i]) && (answers_color_num[i] !== 0)) {
+					num_num++;
+				}
+			}
+			return [spot_num, num_num];
+		}
 
-            document.getElementById("answer").appendChild(Content1);
-            document.getElementById("answer").appendChild(document.createElement("br"));
-            document.getElementById("answer").appendChild(Content2);
-            document.getElementById("answer").appendChild(document.createElement("br"));
+		function array_to_num16_string(array) {
+			let num = 0;
+			for (let i = 0; i < spot_count; i++) {
+				num += array[i];
+				num *= 10;
+			}
+			num += color_count;
+			num *= 10;
+			num += spot_count;
 
-            answers_memory.push([position_num, num_num]);
+			return num.toString(16);
+		}
 
-            if (position_num === position_count) {
-                let content3 = "Congratulations!"
-                let Content3 = document.createTextNode(content3);
-                let para = document.createElement("p");
-                para.setAttribute("style","color: red; font-size: 210%;");
-                para.appendChild(Content3);
-                document.getElementById("answer").appendChild(para);
-                let num16_string = array_to_num16_string(question);
-                document.getElementById("answer_region").innerHTML = "";
+		function time_to_string() {
+			const milliseconds = finish_time - start_time - (finish_time - start_time) % 10; //最后一位舍弃
+			const seconds = (milliseconds % 60_000 / 1000).toFixed(2);
+			if (milliseconds >= 60_000) {
+				const minutes = Math.floor(milliseconds / 60_000);
+				return minutes + "分" + seconds + "秒";
+			}
+			else {
+				return seconds + "秒";
+			}
+		}
 
-                let content_when_success_head = "<div id=\"sharing_text\" style=\"border: 1px solid; border-color: black; width: 100%; font-size: 100%; padding: 10px; margin-bottom: 0px\">";
-                let content_when_success = "你用了" + round +"步解决了此题<br>";
-                let content_for_sharing = "我用了" + round +"步解决了此题\r";
-                for(let i = 0; i<round; i++){
-                	content_when_success = content_when_success + (i+1) + ": " + answers_memory[i][0] + " " + answers_memory[i][1] + "<br>";
-                	content_for_sharing = content_for_sharing + (i+1) + ": " + answers_memory[i][0] + " " + answers_memory[i][1] + "\r";
-                }
+		function show() {
+			document.getElementById("sharing_text_question").innerHTML = "";
 
-                // if(is_WeChat){
-	               //  content_when_success = content_when_success + `${base_url}#${num16_string}`; 
-                // }
-                // else{
-	               //  content_when_success = content_when_success + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`; 
-                // }
+			round++;
+			let content1 = round + ": ";
+			for (let i = 0; i < spot_count; i++) {
+				content1 += " " + colors[answers[i]];
+			}
+			const [spot_num, num_num] = match();
+			let content2 = "" + spot_num + "个位置颜色正确 " + num_num + "种颜色数量正确";
 
-                content_for_sharing = content_for_sharing + `${base_url}#${num16_string}` + "\r打开链接，你也试试这道题吧";
+			let Content1 = document.createTextNode(content1);
+			let Content2 = document.createTextNode(content2);
 
-                let content_when_success_tail = "</div><button id=\"copy_btn\" style=\"margin-top:0px\">点我分享此题</button>";
+			document.getElementById("answer").appendChild(Content1);
+			document.getElementById("answer").appendChild(document.createElement("br"));
+			document.getElementById("answer").appendChild(Content2);
+			document.getElementById("answer").appendChild(document.createElement("br"));
 
-                document.getElementById("share").innerHTML = content_when_success_head + content_when_success + content_when_success_tail;
+			answers_memory.push([spot_num, num_num]);
 
-                if_success = true;
+			if (spot_num === spot_count) {
+				let content3 = "Congratulations!"
+				let Content3 = document.createTextNode(content3);
+				let para = document.createElement("p");
+				para.setAttribute("style","color: red; font-size: 210%");
+				para.appendChild(Content3);
+				document.getElementById("answer").appendChild(para);
+				let num16_string = array_to_num16_string(question);
 
-                copy_for_sharing(content_for_sharing);
-            }
-            else {
-                document.getElementById("answer_region").innerHTML=(round+1) + ":";
-            }
+				const common_content = "用了" + round + "步解决了此题，耗时" + time_to_string()
+					+ "（" + spot_count + "个位置，" + color_count + "种可能的颜色）";
+				let content_when_success = "你" + common_content;
+				let content_for_sharing = "我" + common_content;
+				for (let i = 0; i < round; i++) {
+					content_when_success += "<br>" + (i + 1) + ": " + answers_memory[i][0] + " " + answers_memory[i][1];
+					content_for_sharing += "\n" + (i + 1) + ": " + answers_memory[i][0] + " " + answers_memory[i][1];
+				}
 
-            now_num = 0;
-        }
+				if (is_WeChat) {
+					content_when_success += `<br>${base_url}#${num16_string}`;
+				}
+				else {
+					content_when_success += `<br><a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`;
+				}
 
-        function share_input() {
-            if (now_num === position_count) {
-                let num16_string = array_to_num16_string(answers);
-                if(is_WeChat){
-                	document.getElementById("share").innerHTML
-                    = "复制以下链接即可和好友分享以刚才输入的内容为答案的问题："
-                    + `${base_url}#${num16_string}`;
-                }
-                else{
-                	document.getElementById("share").innerHTML
-                    = "复制以下链接即可和好友分享以刚才输入的内容为答案的问题："
-                    + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`;	
-                }
-                
-            }
-        }
+				content_for_sharing += `\n${base_url}#${num16_string}\n打开链接，你也试试这道题吧`;
+				copy_for_sharing.text = content_for_sharing;
 
-        function refresh() {
-            try {
-                if (hash_used) {
-                    throw 1;
-                } else {
-                    hash_used = true;
+				document.getElementById("sharing_text_result").innerHTML = content_when_success;
+				document.getElementById("share").hidden = false;
 
-                    if (location.hash === "") {
-                        throw 1;
-                    }
+				if_success = true;
+				document.getElementById("answer_region").innerHTML = "";
+			}
+			else {
+				document.getElementById("answer_region").innerHTML = (round + 1) + ":";
+			}
 
-                    let num16_string = location.hash.slice(1);
-                    let num = parseInt(num16_string, 16);
-                    let num_string = num.toString();
-                    if (Number.isNaN(num) || num_string.length < 2) {
-                        throw 1;
-                    }
+			now_num = 0;
+		}
 
-                    position_count = parseInt(num_string.charAt(num_string.length - 1));
-                    color_count = parseInt(num_string.charAt(num_string.length - 2));
-                    if (position_count === 0 || color_count === 0) {
-                        color_count = 5;
-                        position_count = 5;
-                        throw 1;
-                    }
+		function copy_for_sharing() {
+			const textarea = document.createElement("textarea");
+			document.body.appendChild(textarea);
+			textarea.innerHTML = copy_for_sharing.text;
+			textarea.select();
+			if (document.execCommand("copy")) {
+				alert("已复制以下内容到剪粘板：\n----------\n" + copy_for_sharing.text + "\n----------\n去发送给你的小伙伴吧");
+			}
+			document.body.removeChild(textarea);
+		}
 
-                    let question_from_hash = [0,0,0,0,0,0,0,0,0];
-                    for (let i = 1; i<=num_string.length-2; i++) {
-                        question_from_hash[position_count-i] = parseInt(num_string.charAt(num_string.length-2-i));
-                        if (question_from_hash[position_count-i] >= color_count) {
-                            color_count = 5;
-                            position_count = 5;
-                            throw 1;
-                        }
-                    }
+		function share_input() {
+			if (now_num === spot_count) {
+				let num16_string = array_to_num16_string(answers);
+				if (is_WeChat) {
+					document.getElementById("sharing_text_question").innerHTML
+						= "复制以下链接即可和好友分享以刚才输入的内容为答案的问题："
+						+ `${base_url}#${num16_string}`;
+				}
+				else {
+					document.getElementById("sharing_text_question").innerHTML
+						= "复制以下链接即可和好友分享以刚才输入的内容为答案的问题："
+						+ `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`;
+				}
+			}
+		}
 
-                    document.getElementById("head").innerHTML="Chromle 有人想让你试试这道题";
-                    question = question_from_hash;
-                    is_shared = true;
-                }
-            }
-            catch (e) {
-                for (let i=0; i<position_count; i++) {
-                    question[i] = Math.floor((Math.random() * color_count));
-                }
-                document.getElementById("head").innerHTML="Chromle";
-                is_shared = false;
-            }
-            document.getElementById("answer").innerHTML="";
-            document.getElementById("answer_region").innerHTML="1:";
-            document.getElementById("share").innerHTML = "";
-            round = 0;
-            now_num = 0;
-            answer_hidden = true;
-            if_success = false;
-            document.getElementById("check_answer").innerHTML="显示答案";
-            document.getElementById("color_count").children[color_count - 1].setAttribute("selected", "");
-            if(!is_pos_col_sym){
-    	        document.getElementById("position_count").children[position_count - 1].setAttribute("selected", "");
-            }
-            set_buttons();
-            set_rules();
-            answers_memory = [];
-        }
+		function refresh() {
+			try {
+				if (hash_used) {
+					throw 1;
+				} else {
+					hash_used = true;
 
-        function match() {
-            let position_num = 0;
-            let answers_color_num = count(answers);
-            let question_color_num = count(question);
-            let num_num = 0;
-            for (let i=0; i<position_count; i++) {
-                if (question[i] === answers[i]) {
-                    position_num ++;
-                }
-                if ((answers_color_num[i] === question_color_num[i]) && (answers_color_num[i] !== 0)) {
-                    num_num++;
-                }
-            }
-            return [position_num, num_num];
-        }
+					if (location.hash === "") {
+						throw 1;
+					}
 
-        function count(array) {
-            let color_num = [0,0,0,0,0,0,0,0,0];
-            for (let i=0; i<position_count; i++) {
-                color_num[array[i]] ++;
-            }
-            return color_num;
-        }
+					let num16_string = location.hash.slice(1);
+					let num = parseInt(num16_string, 16);
+					let num_string = num.toString();
+					if (Number.isNaN(num) || num_string.length < 2) {
+						throw 1;
+					}
 
-        function show_answer() {
-            let content = "";
-            let button_content;
-            if (!answer_hidden) {
-                if(is_shared){
-                    content = "Chromle 有人想让你试试这道题";
-                }
-                else {
-                    content = "Chromle";
-                }
-                button_content = "显示答案";
-            }
-            if (answer_hidden) {
-                for (let i=0; i<position_count; i++) {
-                    content = content+" "+colors[question[i]];
-                }
-                button_content = "隐藏答案";
-            }
-            document.getElementById("head").innerHTML=content;
-            document.getElementById("check_answer").innerHTML=button_content;
-            answer_hidden = !answer_hidden;
-        }
+					spot_count = parseInt(num_string[num_string.length - 1]);
+					color_count = parseInt(num_string[num_string.length - 2]);
+					if (spot_count === 0 || color_count === 0) {
+						color_count = 5;
+						spot_count = 5;
+						throw 1;
+					}
 
-        function switch_char_color() {
-            if (char_color_bool) {
-                colors = ['红', '绿', '黄', '蓝', '紫', '橙','棕','黑','白'];
-                example_question = ["红", "黄", "红", "绿", "绿", "蓝", "橙", "绿", "白"];
-                example_answer = ["黄", "黄", "蓝", "绿", "紫", "绿", "红", "绿", "紫"];
-            }
-            else {
-                colors = ['🟥', '🟩', '🟨', '🟦', '🟪', '🟧', '🟫', '⬛', '⬜'];
-                example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
-                example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
-            }
-            for (let i = 0; i<color_count; i++) {
-                document.getElementById(i.toString()).innerHTML=colors[i];
-            }
+					let question_from_hash = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+					for (let i = 1; i <= num_string.length - 2; i++) {
+						question_from_hash[spot_count - i] = parseInt(num_string[num_string.length - 2 - i]);
+						if (question_from_hash[spot_count - i] >= color_count) {
+							color_count = 5;
+							spot_count = 5;
+							throw 1;
+						}
+					}
 
-            let content = "";
-            if (!answer_hidden) {
-                for (let i=0; i<position_count; i++) {
-                    content = content+" "+colors[question[i]];
-                }
-                document.getElementById("head").innerHTML=content;
-            }
+					document.getElementById("head").innerHTML = "Chromle 有人想让你试试这道题";
+					question = question_from_hash;
+					is_shared = true;
 
-            set_rules();
-            char_color_bool = !char_color_bool;
-        }
+					if (spot_count !== color_count) {
+						is_spot_col_sync = false;
+						document.getElementById("spot_color_sync").checked = false;
+						document.getElementById("spot_count").disabled = false;
+						document.getElementById("spot_count_label").style.color = "";
+					}
+				}
+			}
+			catch (e) {
+				for (let i = 0; i < spot_count; i++) {
+					question[i] = Math.floor((Math.random() * color_count));
+				}
+				document.getElementById("head").innerHTML = "Chromle";
+				is_shared = false;
+			}
+			document.getElementById("answer").innerHTML = "";
+			document.getElementById("answer_region").innerHTML = "1:";
+			document.getElementById("share").hidden = true;
+			document.getElementById("sharing_text_question").innerHTML = "";
+			round = 0;
+			now_num = 0;
+			answer_hidden = true;
+			if_success = false;
+			document.getElementById("check_answer").innerHTML = "显示答案";
+			document.getElementById("color_count").selectedIndex = color_count - 1;
+			document.getElementById("spot_count").selectedIndex = spot_count - 1;
+			set_buttons();
+			set_rules();
+			answers_memory = [];
+			start_time = Date.now();
+		}
 
-        function set_color_count(value){
-            value = parseInt(value);
-            color_count = value;
-            if(is_pos_col_sym){
-            	position_count = color_count;
-            }
-            refresh();
-        }
+		function show_answer() {
+			let content = "";
+			let button_content;
+			if (!answer_hidden) {
+				if (is_shared) {
+					content = "Chromle 有人想让你试试这道题";
+				}
+				else {
+					content = "Chromle";
+				}
+				button_content = "显示答案";
+			}
+			if (answer_hidden) {
+				for (let i = 0; i < spot_count; i++) {
+					content += " " + colors[question[i]];
+				}
+				button_content = "隐藏答案";
+			}
+			document.getElementById("head").innerHTML = content;
+			document.getElementById("check_answer").innerHTML = button_content;
+			answer_hidden = !answer_hidden;
+		}
 
-        function set_position_count(value){
-            value = parseInt(value);
-            position_count = value;
-            refresh();
-        }
+		function switch_char_color() {
+			use_emoji_color = !use_emoji_color;
 
-        function set_rules(){
-            let i;
-            let example_pos = [0, 0, 0, 1, 2, 2, 2, 2, 3, 3];
-            let example_num = [0, 0, 0, 0, 1, 0, 2, 2, 2, 2];
+			if (!use_emoji_color) {
+				colors = ["红", "绿", "黄", "蓝", "紫", "橙","棕","黑","白"];
+				example_question = ["红", "黄", "红", "绿", "绿", "蓝", "橙", "绿", "白"];
+				example_answer = ["黄", "黄", "蓝", "绿", "紫", "绿", "红", "绿", "紫"];
+			}
+			else {
+				colors = ["🟥", "🟩", "🟨", "🟦", "🟪", "🟧", "🟫", "⬛", "⬜"];
+				example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
+				example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
+			}
+			for (let i = 0; i < color_count; i++) {
+				document.getElementById(i.toString()).innerHTML = colors[i];
+			}
 
-            let content1 = "“";
-            for(i=0; i < (color_count-1); i++){
-                content1 = content1 + colors[i] + "、";
-            }
-            content1 = content1 + colors[i] + "”";
-            document.getElementById("rule1").innerHTML="规则：一共有" + position_count + "个位置，每个位置会随机生成" + content1 + color_count + "种颜色之一，需要我们去猜出生成的结果是什么。";
+			let content = "";
+			if (!answer_hidden) {
+				for (let i = 0; i < spot_count; i++) {
+					content += " " + colors[question[i]];
+				}
+				document.getElementById("head").innerHTML = content;
+			}
 
-            let content2 = "如生成“";
-            for(i=0; i < (position_count-1); i++){
-                content2 = content2 + example_question[i] + "、";
-            }
-            content2 = content2 + example_question[i] + "”，猜测“";
-            for(i=0; i < (position_count-1); i++){
-                content2 = content2 + example_answer[i] + "、";
-            }
-            content2 = content2 + example_answer[i] + "”，会出现“" + example_pos[position_count] + "个位置颜色正确 " + example_num[position_count] + "种颜色数量正确”。";
-            document.getElementById("rule2").innerHTML=content2;
-            document.getElementById("rule3").innerHTML="出现“" + position_count + "个位置颜色正确”即算成功。";
-        }
+			set_rules();
+		}
 
-        function set_buttons(){
-            document.getElementById("buttons").innerHTML = colors.slice(0, color_count).map(
-                (val, idx) => `<button id="${idx}" onclick="choose(${idx})">${val}</button>`
-            ).join(" ");
-        }
+		function set_rules() {
+			let i;
+			let example_spot = [0, 0, 0, 1, 2, 2, 2, 2, 3, 3];
+			let example_num = [0, 0, 0, 0, 1, 0, 2, 2, 2, 2];
 
-        function show_rules(){
-			let rule_elememt = document.getElementById("rules");
+			let content1 = "“";
+			for (i = 0; i < (color_count-1); i++) {
+				content1 += colors[i] + "、";
+			}
+			content1 += colors[i] + "”";
+			document.getElementById("rule1").innerHTML = "规则：一共有" + spot_count + "个位置，每个位置会随机生成" + content1 + color_count + "种颜色之一，需要我们去猜出生成的结果是什么。";
+
+			let content2 = "如生成“";
+			for (i = 0; i < (spot_count-1); i++) {
+				content2 += example_question[i] + "、";
+			}
+			content2 += example_question[i] + "”，猜测“";
+			for (i = 0; i < (spot_count-1); i++) {
+				content2 += example_answer[i] + "、";
+			}
+			content2 += example_answer[i] + "”，会出现“" + example_spot[spot_count] + "个位置颜色正确 " + example_num[spot_count] + "种颜色数量正确”。";
+			document.getElementById("rule2").innerHTML = content2;
+			document.getElementById("rule3").innerHTML = "出现“" + spot_count + "个位置颜色正确”即算成功。";
+		}
+
+		function set_buttons() {
+			document.getElementById("buttons").innerHTML = colors.slice(0, color_count).map(
+				(val, idx) => `<button id="${idx}" onclick="choose(${idx})">${val}</button>`
+			).join(" ");
+		}
+
+		function show_or_hide_rules() {
+			let rule_element = document.getElementById("rules");
 			let rule_button = document.getElementById("check_rules");
 
-        	if(rule_hidden){
-        		rule_elememt.removeAttribute("hidden");
-        		rule_button.innerHTML="收起规则";
-        	}
-        	else{
-        		rule_elememt.setAttribute("hidden", "hidden");
-        		rule_button.innerHTML="显示规则";
-        	}
+			if (rule_element.hidden) {
+				rule_element.hidden = false;
+				rule_button.innerHTML = "收起规则";
+			}
+			else {
+				rule_element.hidden = true;
+				rule_button.innerHTML = "显示规则";
+			}
+		}
 
-        	rule_hidden = !rule_hidden;
-        }
+		function set_color_count(value) {
+			value = parseInt(value);
+			color_count = value;
+			if (is_spot_col_sync) {
+				spot_count = color_count;
+			}
+			refresh();
+		}
 
-        function more(){
-        	let more_button = document.getElementById("more_button");
-        	if(more_hidden){
-        		more_button.innerHTML="收起";
-        	}
-        	else{
-        		more_button.innerHTML="更多";
-        	}
+		function set_spot_count(value) {
+			value = parseInt(value);
+			spot_count = value;
+			refresh();
+		}
 
-        	more_hidden = !more_hidden;
-        }
-
-        function ban_double_click(){ //禁止双击放大页面
-        	let lastTouchEnd = 0;
-			document.documentElement.addEventListener('touchend', function (event) {
-				let now = Date.now();
-				if (now - lastTouchEnd <= 300) {
-					event.preventDefault();
+		function set_spot_colour_count_synchronize(value) {
+			if (value !== is_spot_col_sync) {
+				is_spot_col_sync = value;
+				if (is_spot_col_sync) {
+					spot_count = color_count;
+					document.getElementById("spot_count").disabled = true;
+					document.getElementById("spot_count_label").style.color = "gray";
 				}
-				  lastTouchEnd = now;
-			}, false);
-        }
-
-        function copy_for_sharing(text){
-        	const copy_btn = document.querySelector('#copy_btn');
-			copy_btn.addEventListener('click',() => {
-			    const input = document.createElement("textarea");
-			    document.body.appendChild(input);
-			    input.innerHTML=text;
-			    input.select();
-			    if (document.execCommand('copy')) {
-			        document.execCommand('copy');
-			        alert("已复制以下内容到剪粘板：\r----------\r" + text +"\r----------\r去发送给你的小伙伴吧");
-			    }
-			 	document.body.removeChild(input);
-			})
-        }
-
-        function position_colour_count_synchronize(value){
-        	value = parseInt(value);
-
-        	if(value !== is_pos_col_sym){
-        		is_pos_col_sym = value;
-
-        		if(is_pos_col_sym){
-        			document.getElementById("position_count_select").setAttribute("hidden", "hidden");
-        		}
-        		else{
-        			document.getElementById("position_count_select").removeAttribute("hidden");
-        		}
-
-        		refresh();
-        	}
-        	
-        }
-
-    </script>
+				else {
+					document.getElementById("spot_count").disabled = false;
+					document.getElementById("spot_count_label").style.color = "";
+				}
+				refresh();
+			}
+		}
+	</script>
 </head>
 <body>
-    <div>
-        <h1 id="head"></h1>
-        <div style="font-size: 30%" id="rules">
-            <div id="rule1"></div>
-            <div id="rule1_5"></div>
-            <div id="rule2"></div>
-            <div id="rule3"></div>
-        </div>
-        <p id="answer"></p>
-        <p></p>
-        <p id="answer_region">1:</p>
-        <p id="share"></p>
-        <p id="buttons">
-        </p>
-        <p>
-            <button onclick="submit()">确定</button>
-            <button onclick="del()">删除</button>
-            <button onclick="refresh()">换一局</button>
-            <button onclick="show_answer()" id="check_answer"></button>
-        </p>
-        <details>
-        	<summary onclick="more()" id="more_button"></summary>
-        	<div style="width: 100%; padding: 10px; border: 1px solid; border-color: black; font-size: 70%; margin-bottom:50px">
-		        <p style="margin: 0px">
-		            <button onclick="switch_char_color()" style="margin-right: 20px;">切换颜色显示方式</button>
-		            <button onclick="show_rules()" id="check_rules">收起规则</button>
-		        </p>
-		        <p style="margin-bottom: 0;">
-		            <button onclick="share_input()">创建问题</button>
-		        </p>
-		        <p style="margin-top: 0; font-size: 100%">从当前输入的答案中创建新问题用于分享，问题的位置个数需等于当前所设定的位置个数</p>
-		        <div>
-		        	<div  style="margin-bottom: 0; font-size: 70%">
-		        		<input type="radio" name="bind_amounts" checked="checked" value="1" id="same" onclick="position_colour_count_synchronize(this.value)">
-		        		<label for="same">颜色数与位置数相同（默认)</label>
-		        		<input type="radio" name="bind_amounts" value="0" id="diff" onclick="position_colour_count_synchronize(this.value)">
-		        		<label for="diff">颜色数与位置数不同</label>
-		        	</div>
-			        <p style="margin: 0;" >
-			            <label for="color_count">选择颜色个数</label>
-			            <select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
-			                <option>1</option>
-			                <option>2</option>
-			                <option>3</option>
-			                <option>4</option>
-			                <option>5</option>
-			                <option>6</option>
-			                <option>7</option>
-			                <option>8</option>
-			                <option>9</option>
-			            </select>
-			        </p>
-			        <p style="margin: 0" id="position_count_select" hidden="hidden">
-			            <label for="position_count">选择位置个数</label>
-			            <select id="position_count" style="font-size: 100%" onchange="set_position_count(this.value)">
-			                <option>1</option>
-			                <option>2</option>
-			                <option>3</option>
-			                <option>4</option>
-			                <option>5</option>
-			                <option>6</option>
-			                <option>7</option>
-			                <option>8</option>
-			                <option>9</option>
-			            </select>
-			        </p>
-			    </div>
-			    <p style="margin: 0; font-size: 100%">友情提示：颜色个数与位置个数相等会比较好玩</p>
+	<div>
+		<h1 id="head"></h1>
+		<div style="font-size: 30%" id="rules">
+			<div id="rule1"></div>
+			<div id="rule1_5"></div>
+			<div id="rule2"></div>
+			<div id="rule3"></div>
+		</div>
+		<p id="answer"></p>
+		<p></p>
+		<p id="answer_region">1:</p>
+		<div id="share" style="font-size: 100%" hidden>
+			<div id="sharing_text_result" style="border: 1px solid black; font-size: 100%; padding: 10px; margin-bottom: 0">
+			</div>
+			<button id="copy_btn" style="margin-top: 0" onclick="copy_for_sharing()">点我分享此题</button>
+		</div>
+		<p id="sharing_text_question"></p>
+		<p id="buttons">
+		</p>
+		<p>
+			<button onclick="submit()">确定</button>
+			<button onclick="del()">删除</button>
+			<button onclick="refresh()">换一局</button>
+			<button onclick="show_answer()" id="check_answer"></button>
+		</p>
+		<details>
+			<summary></summary>
+			<div style="padding: 10px; border: 1px solid black; font-size: 70%; margin-bottom:50px">
+				<p style="margin: 0">
+					<button onclick="switch_char_color()" style="margin-right: 20px">切换颜色显示方式</button>
+					<button onclick="show_or_hide_rules()" id="check_rules">收起规则</button>
+				</p>
+				<p style="margin-bottom: 0">
+					<button onclick="share_input()">创建问题</button>
+				</p>
+				<p style="margin-top: 0; font-size: 100%">从当前输入的答案中创建新问题用于分享，问题的位置个数需等于当前所设定的位置个数</p>
+				<hr>
+				<div>
+					<p style="margin: 0.5em 0; font-size: 60%">
+						<label for="color_count">颜色个数</label>
+						<select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
+							<option>1</option>
+							<option>2</option>
+							<option>3</option>
+							<option>4</option>
+							<option>5</option>
+							<option>6</option>
+							<option>7</option>
+							<option>8</option>
+							<option>9</option>
+						</select>
+						<input type="checkbox" id="spot_color_sync" style="transform: scale(175%); margin-left: 1.25em"
+							   onchange="set_spot_colour_count_synchronize(this.checked)" checked>
+						<label for="spot_color_sync">位置数与颜色数相同</label>
+					</p>
+					<p style="margin: 0.5em 0; font-size: 60%">
+						<label for="spot_count" id="spot_count_label" style="color: gray">位置个数</label>
+						<select id="spot_count" style="font-size: 100%" onchange="set_spot_count(this.value)" disabled>
+							<option>1</option>
+							<option>2</option>
+							<option>3</option>
+							<option>4</option>
+							<option>5</option>
+							<option>6</option>
+							<option>7</option>
+							<option>8</option>
+							<option>9</option>
+						</select>
+					</p>
+				</div>
+				<p style="margin: 0; font-size: 100%">友情提示：颜色个数与位置个数相等会比较好玩</p>
+			</div>
+		</details>
+	</div>
+	<script>
+		document.getElementById("rule1_5").innerHTML = "每猜测一次，可得到两条信息：<ol><li>有几个位置上出现的颜色是正确的；</li><li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li></ol>";
+		refresh();
+		// {
+		// 	let para = document.getElementById("rules");
+		// 	para.setAttribute("hidden", "hidden");
+		// 	para.removeAttribute("hidden");
+		// }
 
-	    	</div>
-        </details>
-    </div>
-    <script>
-    	ban_double_click();
-    	document.getElementById("more_button").innerHTML="更多";
-    	document.getElementById("rule1_5").innerHTML="每猜测一次，可得到两条信息：<ol><li>有几个位置上出现的颜色是正确的；</li><li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li></ol>"
-        refresh();
-        // {
-        // 	let para = document.getElementById("rules");
-        // 	para.setAttribute("hidden", "hidden");
-        // 	para.removeAttribute("hidden");
-        // }
-
-    </script>
+	</script>
 </body>
 </html>
