@@ -63,7 +63,7 @@
 
 		const base_url = location.href.replace(location.hash === "" ? "#" : location.hash, "");
 
-		let is_spot_col_sync = true; //记录位置数量和颜色数量是否同步
+		let is_spot_color_sync = true; //记录位置数量和颜色数量是否同步
 
 		let start_time, finish_time;
 
@@ -276,7 +276,7 @@
 				is_shared = true;
 
 				if (spot_count !== color_count) {
-					is_spot_col_sync = false;
+					is_spot_color_sync = false;
 					document.getElementById("spot_color_sync").checked = false;
 					document.getElementById("spot_count").disabled = false;
 					document.getElementById("spot_count_label").style.color = "";
@@ -405,7 +405,7 @@
 		function set_color_count(value) {
 			value = parseInt(value);
 			color_count = value;
-			if (is_spot_col_sync) {
+			if (is_spot_color_sync) {
 				spot_count = color_count;
 			}
 			refresh();
@@ -417,19 +417,21 @@
 			refresh();
 		}
 
-		function set_spot_colour_count_synchronize(value) {
-			if (value !== is_spot_col_sync) {
-				is_spot_col_sync = value;
-				if (is_spot_col_sync) {
-					spot_count = color_count;
+		function set_spot_color_count_synchronize(value) {
+			if (value !== is_spot_color_sync) {
+				is_spot_color_sync = value;
+				if (is_spot_color_sync) {
 					document.getElementById("spot_count").disabled = true;
 					document.getElementById("spot_count_label").style.color = "gray";
+					if (spot_count !== color_count) {
+						spot_count = color_count;
+						refresh();
+					}
 				}
 				else {
 					document.getElementById("spot_count").disabled = false;
 					document.getElementById("spot_count_label").style.color = "";
 				}
-				refresh();
 			}
 		}
 	</script>
@@ -487,7 +489,7 @@
 							<option>9</option>
 						</select>
 						<input type="checkbox" id="spot_color_sync" style="transform: scale(175%); margin-left: 1.25em"
-							   onchange="set_spot_colour_count_synchronize(this.checked)" checked>
+							   onchange="set_spot_color_count_synchronize(this.checked)" checked>
 						<label for="spot_color_sync">位置数与颜色数相同</label>
 					</p>
 					<p style="margin: 0.5em 0; font-size: 60%">
