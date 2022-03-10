@@ -135,11 +135,11 @@
 		}
 
 		function time_to_string() {
-			const milliseconds = finish_time - start_time - (finish_time - start_time) % 10; //最后一位舍弃
-			const seconds = (milliseconds % 60_000 / 1000).toFixed(2);
-			if (milliseconds >= 60_000) {
-				const minutes = Math.floor(milliseconds / 60_000);
-				return minutes + "分" + seconds + "秒";
+			const time_in_seconds = Math.floor((finish_time - start_time) / 1000);
+			const seconds = (time_in_seconds % 60).toString();
+			if (time_in_seconds >= 60) {
+				const minutes = Math.floor(time_in_seconds / 60);
+				return minutes + "分" + seconds.padStart(2, "0") + "秒";
 			}
 			else {
 				return seconds + "秒";
@@ -176,7 +176,7 @@
 				document.getElementById("answer").appendChild(para);
 				let num16_string = array_to_num16_string(question);
 
-				const common_content = "用了" + round + "步解决了此题，耗时" + time_to_string()
+				const common_content = "用" + round + "步解决了此题，用时" + time_to_string()
 					+ "（" + spot_count + "个位置，" + color_count + "种可能的颜色）";
 				let content_when_success = "你" + common_content;
 				let content_for_sharing = "我" + common_content;
@@ -239,48 +239,47 @@
 			try {
 				if (hash_used) {
 					throw 1;
-				} else {
-					hash_used = true;
+				}
+				hash_used = true;
 
-					if (location.hash === "") {
-						throw 1;
-					}
+				if (location.hash === "") {
+					throw 1;
+				}
 
-					let num16_string = location.hash.slice(1);
-					let num = parseInt(num16_string, 16);
-					let num_string = num.toString();
-					if (Number.isNaN(num) || num_string.length < 2) {
-						throw 1;
-					}
+				let num16_string = location.hash.slice(1);
+				let num = parseInt(num16_string, 16);
+				let num_string = num.toString();
+				if (Number.isNaN(num) || num_string.length < 2) {
+					throw 1;
+				}
 
-					spot_count = parseInt(num_string[num_string.length - 1]);
-					color_count = parseInt(num_string[num_string.length - 2]);
-					if (spot_count === 0 || color_count === 0) {
+				spot_count = parseInt(num_string[num_string.length - 1]);
+				color_count = parseInt(num_string[num_string.length - 2]);
+				if (spot_count === 0 || color_count === 0) {
+					color_count = 5;
+					spot_count = 5;
+					throw 1;
+				}
+
+				let question_from_hash = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+				for (let i = 1; i <= num_string.length - 2; i++) {
+					question_from_hash[spot_count - i] = parseInt(num_string[num_string.length - 2 - i]);
+					if (question_from_hash[spot_count - i] >= color_count) {
 						color_count = 5;
 						spot_count = 5;
 						throw 1;
 					}
+				}
 
-					let question_from_hash = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-					for (let i = 1; i <= num_string.length - 2; i++) {
-						question_from_hash[spot_count - i] = parseInt(num_string[num_string.length - 2 - i]);
-						if (question_from_hash[spot_count - i] >= color_count) {
-							color_count = 5;
-							spot_count = 5;
-							throw 1;
-						}
-					}
+				document.getElementById("head").innerHTML = "Chromle 有人想让你试试这道题";
+				question = question_from_hash;
+				is_shared = true;
 
-					document.getElementById("head").innerHTML = "Chromle 有人想让你试试这道题";
-					question = question_from_hash;
-					is_shared = true;
-
-					if (spot_count !== color_count) {
-						is_spot_col_sync = false;
-						document.getElementById("spot_color_sync").checked = false;
-						document.getElementById("spot_count").disabled = false;
-						document.getElementById("spot_count_label").style.color = "";
-					}
+				if (spot_count !== color_count) {
+					is_spot_col_sync = false;
+					document.getElementById("spot_color_sync").checked = false;
+					document.getElementById("spot_count").disabled = false;
+					document.getElementById("spot_count_label").style.color = "";
 				}
 			}
 			catch (e) {
