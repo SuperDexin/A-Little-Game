@@ -464,7 +464,7 @@
 		</p>
 		<details>
 			<summary></summary>
-			<div style="padding: 10px; border: 1px solid black; font-size: 70%; margin-bottom:50px">
+			<div style="padding: 10px; border: 1px solid black; font-size: 70%;">
 				<p style="margin: 0">
 					<button onclick="switch_char_color()" style="margin-right: 20px">切换颜色显示方式</button>
 					<button onclick="show_or_hide_rules()" id="check_rules">收起规则</button>
@@ -511,8 +511,33 @@
 			</div>
 		</details>
 	</div>
+
+	<div style="font-size: 50%; color: gray">
+		<br>
+		<p id="copyright"></p>
+		<p>
+			Created by <a href="https://github.com/SuperDexin" style="color: gray; text-decoration: none">@SuperDexin</a><br>
+			Special Thanks to the Collabrator <a href="https://github.com/plazum" style="color: gray; text-decoration: none">@plazum</a><br>
+			<a href="https://github.com/SuperDexin/A-Little-Game" style="color: gray; text-decoration: none">https://github.com/SuperDexin/A-Little-Game</a>
+		</p>
+	</div>
+
+
 	<script>
 		document.getElementById("rule1_5").innerHTML = "每猜测一次，可得到两条信息：<ol><li>有几个位置上出现的颜色是正确的；</li><li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li></ol>";
+		{
+			let d = new Date();
+			let n = d.getFullYear();
+			let content = "";
+			if(n > 2022){
+				content = " - " + n;
+			}
+			document.getElementById("copyright").innerHTML=`Copyright © 2022${content} SuperDexin. All rights reserved.<br>`
+			+ "Created by <a href=\"https://github.com/SuperDexin\" style=\"color: gray; text-decoration: none\">@SuperDexin</a><br>"
+			+ "Special Thanks to the Collabrator <a href=\"https://github.com/plazum\" style=\"color: gray; text-decoration: none\">@plazum</a><br>"
+			+ "<a href=\"https://github.com/SuperDexin/A-Little-Game\" style=\"color: gray; text-decoration: none\">https://github.com/SuperDexin/A-Little-Game</a>"
+		}
+
 		refresh();
 		// {
 		// 	let para = document.getElementById("rules");
