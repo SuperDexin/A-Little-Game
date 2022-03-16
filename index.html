@@ -31,6 +31,14 @@
 		details[open] > summary::after {
 			content: "收起";
 		}
+
+		.link {
+			color: gray;
+		}
+
+		.link:not(:hover) {
+			text-decoration: none;
+		}
 	</style>
 	<link rel="icon" href="favicon.ico">
 	<script>
@@ -512,10 +520,15 @@
 		</details>
 	</div>
 
-	<div style="font-size: 50%; color: gray">
+	<footer style="color: gray">
 		<br>
-		<p id="copyright"></p>
-	</div>
+		<p>
+			Copyright © 2022<span id="copyright_year"></span> SuperDexin. All rights reserved.<br>
+			Created by <a class="link" href="https://github.com/SuperDexin">@SuperDexin</a><br>
+			Special Thanks to the Collabrator <a class="link" href="https://github.com/plazum">@plazum</a><br>
+			<a class="link" href="https://github.com/SuperDexin/A-Little-Game">https://github.com/SuperDexin/A-Little-Game</a>
+		</p>
+	</footer>
 
 
 	<script>
@@ -523,14 +536,13 @@
 		{
 			let d = new Date();
 			let n = d.getFullYear();
-			let content = "";
-			if(n > 2022){
-				content = "-" + n;
+			if (n > 2022) {
+				document.getElementById("copyright_year").innerHTML = "-" + n;
 			}
-			document.getElementById("copyright").innerHTML=`Copyright © 2022${content} SuperDexin. All rights reserved.<br>`
-			+ "Created by <a href=\"https://github.com/SuperDexin\" style=\"color: gray; text-decoration: none\">@SuperDexin</a><br>"
-			+ "Special Thanks to the Collabrator <a href=\"https://github.com/plazum\" style=\"color: gray; text-decoration: none\">@plazum</a><br>"
-			+ "<a href=\"https://github.com/SuperDexin/A-Little-Game\" style=\"color: gray; text-decoration: none\">https://github.com/SuperDexin/A-Little-Game</a>"
+			// document.getElementById("copyright").innerHTML=`Copyright © 2022${content} SuperDexin. All rights reserved.<br>`
+			// + "Created by <a href=\"https://github.com/SuperDexin\" style=\"color: gray; text-decoration: none\">@SuperDexin</a><br>"
+			// + "Special Thanks to the Collabrator <a href=\"https://github.com/plazum\" style=\"color: gray; text-decoration: none\">@plazum</a><br>"
+			// + "<a href=\"https://github.com/SuperDexin/A-Little-Game\" style=\"color: gray; text-decoration: none\">https://github.com/SuperDexin/A-Little-Game</a>"
 		}
 
 		refresh();
