@@ -164,7 +164,7 @@
 				content1 += " " + colors[answers[i]];
 			}
 			const [spot_num, num_num] = match();
-			const content2 = "" + spot_num + "个位置颜色正确 " + num_num + "种颜色数量正确";
+			const content2 = spot_num + "个位置颜色正确 " + num_num + "种颜色数量正确";
 
 			const Content1 = document.createElement("span");
 			Content1.setAttribute("id", "a_" + round);
@@ -183,7 +183,7 @@
 				const content3 = "Congratulations!"
 				const Content3 = document.createTextNode(content3);
 				const para = document.createElement("p");
-				para.setAttribute("style","color: red; font-size: 210%");
+				para.setAttribute("style", "color: red; font-size: 210%");
 				para.appendChild(Content3);
 				document.getElementById("answer").appendChild(para);
 				const num16_string = array_to_num16_string(question);
