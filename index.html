@@ -49,7 +49,8 @@
 
 		let question = new Array(9);
 		let answers = new Array(9);
-		let answers_memory = [];
+		let answers_memory_info = [];
+		let answers_memory_data = [];
 
 		let color_count = 5;
 		let spot_count = 5;
@@ -67,7 +68,7 @@
 
 		let is_shared = false;
 
-		let is_WeChat = navigator.userAgent.match(/MicroMessenger/i) !== null;
+		const is_WeChat = navigator.userAgent.match(/MicroMessenger/i) !== null;
 
 		const base_url = location.href.replace(location.hash === "" ? "#" : location.hash, "");
 
@@ -163,34 +164,37 @@
 				content1 += " " + colors[answers[i]];
 			}
 			const [spot_num, num_num] = match();
-			let content2 = "" + spot_num + "个位置颜色正确 " + num_num + "种颜色数量正确";
+			const content2 = "" + spot_num + "个位置颜色正确 " + num_num + "种颜色数量正确";
 
-			let Content1 = document.createTextNode(content1);
-			let Content2 = document.createTextNode(content2);
+			const Content1 = document.createElement("span");
+			Content1.setAttribute("id", "a_" + round);
+			Content1.appendChild(document.createTextNode(content1));
+			const Content2 = document.createTextNode(content2);
 
 			document.getElementById("answer").appendChild(Content1);
 			document.getElementById("answer").appendChild(document.createElement("br"));
 			document.getElementById("answer").appendChild(Content2);
 			document.getElementById("answer").appendChild(document.createElement("br"));
 
-			answers_memory.push([spot_num, num_num]);
+			answers_memory_info.push([spot_num, num_num]);
+			answers_memory_data.push(answers.slice(0, spot_count));
 
 			if (spot_num === spot_count) {
-				let content3 = "Congratulations!"
-				let Content3 = document.createTextNode(content3);
-				let para = document.createElement("p");
+				const content3 = "Congratulations!"
+				const Content3 = document.createTextNode(content3);
+				const para = document.createElement("p");
 				para.setAttribute("style","color: red; font-size: 210%");
 				para.appendChild(Content3);
 				document.getElementById("answer").appendChild(para);
-				let num16_string = array_to_num16_string(question);
+				const num16_string = array_to_num16_string(question);
 
 				const common_content = "用" + round + "步解决了此题，用时" + time_to_string()
 					+ "（" + spot_count + "个位置，" + color_count + "种可能的颜色）";
 				let content_when_success = "你" + common_content;
 				let content_for_sharing = "我" + common_content;
 				for (let i = 0; i < round; i++) {
-					content_when_success += "<br>" + (i + 1) + ": " + answers_memory[i][0] + " " + answers_memory[i][1];
-					content_for_sharing += "\n" + (i + 1) + ": " + answers_memory[i][0] + " " + answers_memory[i][1];
+					content_when_success += "<br>" + (i + 1) + ": " + answers_memory_info[i][0] + " " + answers_memory_info[i][1];
+					content_for_sharing += "\n" + (i + 1) + ": " + answers_memory_info[i][0] + " " + answers_memory_info[i][1];
 				}
 
 				if (is_WeChat) {
@@ -222,14 +226,14 @@
 			textarea.innerHTML = copy_for_sharing.text;
 			textarea.select();
 			if (document.execCommand("copy")) {
-				alert("已复制以下内容到剪粘板：\n----------\n" + copy_for_sharing.text + "\n----------\n去发送给你的小伙伴吧");
+				alert("已复制以下内容到剪贴板：\n----------\n" + copy_for_sharing.text + "\n----------\n去发送给你的小伙伴吧");
 			}
 			document.body.removeChild(textarea);
 		}
 
 		function share_input() {
 			if (now_num === spot_count) {
-				let num16_string = array_to_num16_string(answers);
+				const num16_string = array_to_num16_string(answers);
 				if (is_WeChat) {
 					document.getElementById("sharing_text_question").innerHTML
 						= "复制以下链接即可和好友分享以刚才输入的内容为答案的问题："
@@ -254,9 +258,9 @@
 					throw 1;
 				}
 
-				let num16_string = location.hash.slice(1);
-				let num = parseInt(num16_string, 16);
-				let num_string = num.toString();
+				const num16_string = location.hash.slice(1);
+				const num = parseInt(num16_string, 16);
+				const num_string = num.toString();
 				if (Number.isNaN(num) || num_string.length < 2) {
 					throw 1;
 				}
@@ -310,7 +314,8 @@
 			document.getElementById("spot_count").selectedIndex = spot_count - 1;
 			set_buttons();
 			set_rules();
-			answers_memory = [];
+			answers_memory_info = [];
+			answers_memory_data = [];
 			start_time = Date.now();
 		}
 
@@ -353,9 +358,13 @@
 			for (let i = 0; i < color_count; i++) {
 				document.getElementById(i.toString()).innerHTML = colors[i];
 			}
+			for (let i = 1; i <= round; i++) {
+				document.getElementById("a_" + i).innerHTML = i + ": " + answers_memory_data[i - 1].map(val => colors[val]).join(" ");
+			}
+			document.getElementById("answer_region").innerHTML = (round + 1) + ": " + answers.slice(0, now_num).map(val => colors[val]).join(" ");
 
-			let content = "";
 			if (!answer_hidden) {
+				let content = "";
 				for (let i = 0; i < spot_count; i++) {
 					content += " " + colors[question[i]];
 				}
@@ -367,8 +376,8 @@
 
 		function set_rules() {
 			let i;
-			let example_spot = [0, 0, 0, 1, 2, 2, 2, 2, 3, 3];
-			let example_num = [0, 0, 0, 0, 1, 0, 2, 2, 2, 2];
+			const example_spot = [0, 0, 0, 1, 2, 2, 2, 2, 3, 3];
+			const example_num = [0, 0, 0, 0, 1, 0, 2, 2, 2, 2];
 
 			let content1 = "“";
 			for (i = 0; i < (color_count-1); i++) {
@@ -397,8 +406,8 @@
 		}
 
 		function show_or_hide_rules() {
-			let rule_element = document.getElementById("rules");
-			let rule_button = document.getElementById("check_rules");
+			const rule_element = document.getElementById("rules");
+			const rule_button = document.getElementById("check_rules");
 
 			if (rule_element.hidden) {
 				rule_element.hidden = false;
@@ -534,8 +543,8 @@
 	<script>
 		document.getElementById("rule1_5").innerHTML = "每猜测一次，可得到两条信息：<ol><li>有几个位置上出现的颜色是正确的；</li><li>有几个颜色出现的次数是正确的（不包括猜对出现0次的颜色）。</li></ol>";
 		{
-			let d = new Date();
-			let n = d.getFullYear();
+			const d = new Date();
+			const n = d.getFullYear();
 			if (n > 2022) {
 				document.getElementById("copyright_year").innerHTML = "-" + n;
 			}
