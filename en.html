@@ -1,471 +1,570 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Chromle</title>
-    <style>
-        body {
-            margin: 0 auto;
-            width: 90%;
-        }
+	<meta charset="utf-8">
+	<title>Chromle</title>
+	<style>
+		body {
+			margin: 0 auto;
+			width: 90%;
+		}
 
-        div {
-            width: 100%;
-            font-size: 200%;
-        }
+		div {
+			font-size: 200%;
+		}
 
-        button {
-            font-size: 200%;
-        }
+		button {
+			font-size: 200%;
+			touch-action: manipulation;
+		}
 
-        @media (orientation: landscape) {
-            button {
-                font-size: 100%;
-            }
-        }
-    </style>
-    <link rel="icon" href="favicon.ico">
-    <script>
-        "use strict";
-        let colors = ['🟥', '🟩', '🟨', '🟦', '🟪', '🟧', '🟫', '⬛', '⬜'];
-        let example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
-        let example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
+		@media (orientation: landscape) {
+			button {
+				font-size: 100%;
+			}
+		}
 
-        let question = new Array(9);
-        let answers = new Array(9);
+		details:not([open]) > summary::after {
+			content: "More";
+		}
 
-        let now_num = 0;
-        let round = 0;
+		details[open] > summary::after {
+			content: "Hide";
+		}
 
-        let answer_hidden = true;
-        let rule_hidden = false;
-        let more_hidden = true;
+		.link {
+			color: gray;
+		}
 
-        let if_success = false;
+		.link:not(:hover) {
+			text-decoration: none;
+		}
+	</style>
+	<link rel="icon" href="favicon.ico">
+	<script>
+		"use strict";
+		let colors = ["🟥", "🟩", "🟨", "🟦", "🟪", "🟧", "🟫", "⬛", "⬜"];
+		let example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
+		let example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
 
-        let char_color_bool = true;
+		let question = new Array(9);
+		let answers = new Array(9);
+		let answers_memory_info = [];
+		let answers_memory_data = [];
 
-        let color_count = 5;
-        let position_count = 5;
+		let color_count = 5;
+		let spot_count = 5;
 
-        let hash_used = false;
+		let now_num = 0;
+		let round = 0;
 
-        let is_shared = false;
+		let answer_hidden = true;
 
-        let is_WeChat = navigator.userAgent.toLowerCase().match(/MicroMessenger/i) == "micromessenger";
+		let if_success = false;
 
-        const base_url = location.href.respot(location.hash === "" ? "#" : location.hash, "");
+		let use_emoji_color = true;
 
-        function choose(ID) {
-            if (now_num < position_count && !if_success) {
-                answers[now_num] = ID;
-                now_num += 1;
-                let content = (round+1) + ": ";
-                for (let i=0; i<now_num; i++) {
-                    content = content+" "+colors[answers[i]];
-                }
-                document.getElementById("answer_region").innerHTML=content;
-            }
-        }
+		let hash_used = false;
 
-        function del() {
-            if (now_num > 0) {
-                now_num -= 1;
-                let content = (round+1) + ": ";
-                for (let i=0; i<now_num; i++) {
-                    content = content+" "+colors[answers[i]];
-                }
-                document.getElementById("answer_region").innerHTML=content;
-            }
-        }
+		let is_shared = false;
 
-        function submit() {
-            if (now_num === position_count) {
-                show();
-            }
-        }
+		const is_WeChat = navigator.userAgent.match(/MicroMessenger/i) !== null;
 
-        function array_to_num16_string(array) {
-            let num = 0;
-            for (let i = 0; i < position_count; i++) {
-                num += array[i];
-                num *= 10;
-            }
-            num += color_count;
-            num *= 10;
-            num += position_count;
+		const base_url = location.href.replace(location.hash === "" ? "#" : location.hash, "");
 
-            return num.toString(16);
-        }
+		let is_spot_color_sync = true; //记录位置数量和颜色数量是否同步
 
-        function show() {
-            document.getElementById("share").innerHTML = "";
+		let start_time, finish_time;
 
-            round++;
-            let content1 = round + ": ";
-            for (let i=0; i<position_count; i++) {
-                content1 = content1+" "+colors[answers[i]];
-            }
-            const [position_num, num_num] = match();
-            let content2 = "" + position_num + " spot(s) with the correct colour.";
-            let content3 = "" + num_num + " colour(s) in the correct amount.";
-
-            let Content1 = document.createTextNode(content1);
-            let Content2 = document.createTextNode(content2);
-            let Content3 = document.createTextNode(content3);
-            document.getElementById("answer").appendChild(Content1);
-            document.getElementById("answer").appendChild(document.createElement("br"));
-            document.getElementById("answer").appendChild(Content2);
-            document.getElementById("answer").appendChild(document.createElement("br"));
-            document.getElementById("answer").appendChild(Content3);
-            document.getElementById("answer").appendChild(document.createElement("br"));
-
-            if (position_num === position_count) {
-                let content3 = "Congratulations!"
-                let Content3 = document.createTextNode(content3);
-                let para = document.createElement("p");
-                para.setAttribute("style","color: red; font-size: 210%;");
-                para.appendChild(Content3);
-                document.getElementById("answer").appendChild(para);
-                let num16_string = array_to_num16_string(question);
-                document.getElementById("answer_region").innerHTML = "";
-                if(is_WeChat){
-	                document.getElementById("share").innerHTML
-	                    = "Copy and send this link to your friend to share the current question: "
-	                    + `${base_url}#${num16_string}`; 
-                }
-                else{
-	                document.getElementById("share").innerHTML
-	                    = "Copy and send this link to your friend to share the current question: "
-	                    + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`; 
-                }
-
-                if_success = true;
-            }
-            else {
-                document.getElementById("answer_region").innerHTML=(round+1) + ":";
-            }
-
-            now_num = 0;
-        }
-
-        function share_input() {
-            if (now_num === position_count) {
-                let num16_string = array_to_num16_string(answers);
-                if(is_WeChat){
-                	document.getElementById("share").innerHTML
-                    = "Copy and send this link to your friend to share a question and its answer is what you entered: "
-                    + `${base_url}#${num16_string}`;
-                }
-                else{
-                	document.getElementById("share").innerHTML
-                    = "Copy and send this link to your friend to share a question and its answer is what you entered: "
-                    + `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`;	
-                }
-                
-            }
-        }
-
-        function refresh() {
-            try {
-                if (hash_used) {
-                    throw 1;
-                } else {
-                    hash_used = true;
-
-                    if (location.hash === "") {
-                        throw 1;
-                    }
-
-                    let num16_string = location.hash.slice(1);
-                    let num = parseInt(num16_string, 16);
-                    let num_string = num.toString();
-                    if (Number.isNaN(num) || num_string.length < 2) {
-                        throw 1;
-                    }
-
-                    position_count = parseInt(num_string.charAt(num_string.length - 1));
-                    color_count = parseInt(num_string.charAt(num_string.length - 2));
-                    if (position_count === 0 || color_count === 0) {
-                        color_count = 5;
-                        position_count = 5;
-                        throw 1;
-                    }
-
-                    let question_from_hash = [0,0,0,0,0,0,0,0,0];
-                    for (let i = 1; i<=num_string.length-2; i++) {
-                        question_from_hash[position_count-i] = parseInt(num_string.charAt(num_string.length-2-i));
-                        if (question_from_hash[position_count-i] >= color_count) {
-                            color_count = 5;
-                            position_count = 5;
-                            throw 1;
-                        }
-                    }
-
-                    document.getElementById("head").innerHTML="Chromle  Someone wants to test you this question.";
-                    question = question_from_hash;
-                    is_shared = true;
-                }
-            }
-            catch (e) {
-                for (let i=0; i<position_count; i++) {
-                    question[i] = Math.floor((Math.random() * color_count));
-                }
-                document.getElementById("head").innerHTML="Chromle";
-                is_shared = false;
-            }
-            document.getElementById("answer").innerHTML="";
-            document.getElementById("answer_region").innerHTML="1:";
-            document.getElementById("share").innerHTML = "";
-            round = 0;
-            now_num = 0;
-            answer_hidden = true;
-            if_success = false;
-            document.getElementById("check_answer").innerHTML="Show Answer";
-            document.getElementById("color_count").children[color_count - 1].setAttribute("selected", "");
-            document.getElementById("position_count").children[position_count - 1].setAttribute("selected", "");
-            set_buttons();
-            set_rules();
-        }
-
-        function match() {
-            let position_num = 0;
-            let answers_color_num = count(answers);
-            let question_color_num = count(question);
-            let num_num = 0;
-            for (let i=0; i<position_count; i++) {
-                if (question[i] === answers[i]) {
-                    position_num ++;
-                }
-                if ((answers_color_num[i] === question_color_num[i]) && (answers_color_num[i] !== 0)) {
-                    num_num++;
-                }
-            }
-            return [position_num, num_num];
-        }
-
-        function count(array) {
-            let color_num = [0,0,0,0,0,0,0,0,0];
-            for (let i=0; i<position_count; i++) {
-                color_num[array[i]] ++;
-            }
-            return color_num;
-        }
-
-        function show_answer() {
-            let content = "";
-            let button_content;
-            if (!answer_hidden) {
-                if(is_shared){
-                    content = "Chromle  Someone wants to test you this question.";
-                }
-                else {
-                    content = "Chromle";
-                }
-                button_content = "Show Answer";
-            }
-            if (answer_hidden) {
-                for (let i=0; i<position_count; i++) {
-                    content = content+" "+colors[question[i]];
-                }
-                button_content = "Hide Answer";
-            }
-            document.getElementById("head").innerHTML=content;
-            document.getElementById("check_answer").innerHTML=button_content;
-            answer_hidden = !answer_hidden;
-        }
-
-        function switch_char_color() {
-            if (char_color_bool) {
-                colors = ['Red', 'Green', 'Yellow', 'Blue', 'Purple', 'Orange','Brown','black','White'];
-                example_question = ["Red", "Yellow", "Red", "Green", "Green", "Blue", "Orange", "Green", "White"];
-                example_answer = ["Yellow", "Yellow", "Blue", "Green", "Purple", "Green", "Red", "Green", "Purple"];
-            }
-            else {
-                colors = ['🟥', '🟩', '🟨', '🟦', '🟪', '🟧', '🟫', '⬛', '⬜'];
-                example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
-                example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
-            }
-            for (let i = 0; i<color_count; i++) {
-                document.getElementById(i.toString()).innerHTML=colors[i];
-            }
-
-            let content = "";
-            if (!answer_hidden) {
-                for (let i=0; i<position_count; i++) {
-                    content = content+" "+colors[question[i]];
-                }
-                document.getElementById("head").innerHTML=content;
-            }
-
-            set_rules();
-            char_color_bool = !char_color_bool;
-        }
-
-        function set_color_count(value){
-            value = parseInt(value);
-            color_count = value;
-            refresh();
-        }
-
-        function set_position_count(value){
-            value = parseInt(value);
-            position_count = value;
-            refresh();
-        }
-
-        function set_rules(){
-            let i;
-            let example_pos = [0, 0, 0, 1, 2, 2, 2, 2, 3, 3];
-            let example_num = [0, 0, 0, 0, 1, 0, 2, 2, 2, 2];
-
-            let content1 = "\"";
-            for(i=0; i < (color_count-1); i++){
-                content1 = content1 + colors[i] + ", ";
-            }
-            content1 = content1 + colors[i] + "\"";
-            document.getElementById("rule1").innerHTML="Rule: There are " + position_count + " spots in total. In every spot, one of the " + color_count + " colours of " + content1 + " will be generated randomly. We need to figure out what the generated result is.";
-
-            let content2 = "For example, if it generates \"";
-            for(i=0; i < (position_count-1); i++){
-                content2 = content2 + example_question[i] + ", ";
-            }
-            content2 = content2 + example_question[i] + "\", and we guess \"";
-            for(i=0; i < (position_count-1); i++){
-                content2 = content2 + example_answer[i] + ", ";
-            }
-            content2 = content2 + example_answer[i] + "\", it will show \"" + example_pos[position_count] + " spot(s) with the correct colour. " + example_num[position_count] + " colour(s) in the correct amount\".";
-            document.getElementById("rule2").innerHTML=content2;
-            document.getElementById("rule3").innerHTML="When it shows \"" + position_count + " spot(s) with the correct colour\", you win!";
-        }
-
-        function set_buttons(){
-            document.getElementById("buttons").innerHTML = colors.slice(0, color_count).map(
-                (val, idx) => `<button id="${idx}" onclick="choose(${idx})">${val}</button>`
-            ).join(" ");
-        }
-
-        function show_rules(){
-			let rule_elememt = document.getElementById("rules");
-			let rule_button = document.getElementById("check_rules");
-
-        	if(rule_hidden){
-        		rule_elememt.removeAttribute("hidden");
-        		rule_button.innerHTML="Hide Rules";
-        	}
-        	else{
-        		rule_elememt.setAttribute("hidden", "hidden");
-        		rule_button.innerHTML="Show Rules";
-        	}
-
-        	rule_hidden = !rule_hidden;
-        }
-
-        function more(){
-        	let more_button = document.getElementById("more_button");
-        	if(more_hidden){
-        		more_button.innerHTML="Hide";
-        	}
-        	else{
-        		more_button.innerHTML="More";
-        	}
-
-        	more_hidden = !more_hidden;
-        }
-
-        function ban_double_click(){ //禁止双击放大页面
-        	let lastTouchEnd = 0;
-			document.documentElement.addEventListener('touchend', function (event) {
-				let now = Date.now();
-				if (now - lastTouchEnd <= 300) {
-					event.preventDefault();
+		function choose(ID) {
+			if (now_num < spot_count && !if_success) {
+				answers[now_num] = ID;
+				now_num += 1;
+				let content = (round + 1) + ": ";
+				for (let i = 0; i < now_num; i++) {
+					content += " " + colors[answers[i]];
 				}
-				  lastTouchEnd = now;
-			}, false);
-        }
+				document.getElementById("answer_region").innerHTML = content;
+			}
+		}
 
-    </script>
+		function del() {
+			if (now_num > 0) {
+				now_num -= 1;
+				let content = (round + 1) + ": ";
+				for (let i = 0; i < now_num; i++) {
+					content += " " + colors[answers[i]];
+				}
+				document.getElementById("answer_region").innerHTML = content;
+			}
+		}
+
+		function submit() {
+			finish_time = Date.now();
+			if (now_num === spot_count) {
+				show();
+			}
+		}
+
+		function count(array) {
+			let color_num = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+			for (let i = 0; i < spot_count; i++) {
+				color_num[array[i]]++;
+			}
+			return color_num;
+		}
+
+		function match() {
+			let spot_num = 0;
+			let answers_color_num = count(answers);
+			let question_color_num = count(question);
+			let num_num = 0;
+			for (let i = 0; i < spot_count; i++) {
+				if (question[i] === answers[i]) {
+					spot_num++;
+				}
+				if ((answers_color_num[i] === question_color_num[i]) && (answers_color_num[i] !== 0)) {
+					num_num++;
+				}
+			}
+			return [spot_num, num_num];
+		}
+
+		function array_to_num16_string(array) {
+			let num = 0;
+			for (let i = 0; i < spot_count; i++) {
+				num += array[i];
+				num *= 10;
+			}
+			num += color_count;
+			num *= 10;
+			num += spot_count;
+
+			return num.toString(16);
+		}
+
+		function time_to_string() {
+			const time_in_seconds = Math.floor((finish_time - start_time) / 1000);
+			const seconds = (time_in_seconds % 60).toString();
+			if (time_in_seconds >= 60) {
+				const minutes = Math.floor(time_in_seconds / 60);
+				return minutes + "min " + seconds + "s";
+			}
+			else {
+				return seconds + "s";
+			}
+		}
+
+		function show() {
+			document.getElementById("sharing_text_question").innerHTML = "";
+
+			round++;
+			let content1 = round + ": ";
+			for (let i = 0; i < spot_count; i++) {
+				content1 += " " + colors[answers[i]];
+			}
+			const [spot_num, num_num] = match();
+			const content2 = spot_num + " spot(s) with the correct colour."
+			const content3 = num_num + " colour(s) in the correct amount.";
+
+			const Content1 = document.createElement("span");
+			Content1.setAttribute("id", "a_" + round);
+			Content1.appendChild(document.createTextNode(content1));
+			const Content2 = document.createTextNode(content2);
+			const Content3 = document.createTextNode(content3);
+
+			document.getElementById("answer").appendChild(Content1);
+			document.getElementById("answer").appendChild(document.createElement("br"));
+			document.getElementById("answer").appendChild(Content2);
+			document.getElementById("answer").appendChild(document.createElement("br"));
+			document.getElementById("answer").appendChild(Content3);
+			document.getElementById("answer").appendChild(document.createElement("br"));
+
+			answers_memory_info.push([spot_num, num_num]);
+			answers_memory_data.push(answers.slice(0, spot_count));
+
+			if (spot_num === spot_count) {
+				const content3 = "Congratulations!"
+				const Content3 = document.createTextNode(content3);
+				const para = document.createElement("p");
+				para.setAttribute("style", "color: red; font-size: 210%");
+				para.appendChild(Content3);
+				document.getElementById("answer").appendChild(para);
+				const num16_string = array_to_num16_string(question);
+
+				const common_content = " have solved the question with " + round + " steps, " + time_to_string()
+					+ " taken (" + spot_count + " spots, " + color_count + " possible colours) ";
+				let content_when_success = "You" + common_content;
+				let content_for_sharing = "I" + common_content;
+				for (let i = 0; i < round; i++) {
+					content_when_success += "<br>" + (i + 1) + ": " + answers_memory_info[i][0] + " " + answers_memory_info[i][1];
+					content_for_sharing += "\n" + (i + 1) + ": " + answers_memory_info[i][0] + " " + answers_memory_info[i][1];
+				}
+
+				if (is_WeChat) {
+					content_when_success += `<br>${base_url}#${num16_string}`;
+				}
+				else {
+					content_when_success += `<br><a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`;
+				}
+
+				content_for_sharing += `\n${base_url}#${num16_string}\nFollow the link and try it yourself`;
+				copy_for_sharing.text = content_for_sharing;
+
+				document.getElementById("sharing_text_result").innerHTML = content_when_success;
+				document.getElementById("share").hidden = false;
+
+				if_success = true;
+				document.getElementById("answer_region").innerHTML = "";
+			}
+			else {
+				document.getElementById("answer_region").innerHTML = (round + 1) + ":";
+			}
+
+			now_num = 0;
+		}
+
+		function copy_for_sharing() {
+			const textarea = document.createElement("textarea");
+			document.body.appendChild(textarea);
+			textarea.innerHTML = copy_for_sharing.text;
+			textarea.select();
+			if (document.execCommand("copy")) {
+				alert("The content below is copied:\n----------\n" + copy_for_sharing.text + "\n----------\nGo share with your friends");
+			}
+			document.body.removeChild(textarea);
+		}
+
+		function share_input() {
+			if (now_num === spot_count) {
+				const num16_string = array_to_num16_string(answers);
+				if (is_WeChat) {
+					document.getElementById("sharing_text_question").innerHTML
+						= "Copy and send this link to your friend to share the question whose answer is what you have just entered: "
+						+ `${base_url}#${num16_string}`;
+				}
+				else {
+					document.getElementById("sharing_text_question").innerHTML
+						= "Copy and send this link to your friend to share the question whose answer is what you have just entered: "
+						+ `<a href="${base_url}#${num16_string}">${base_url}#${num16_string}</a>`;
+				}
+			}
+		}
+
+		function refresh() {
+			try {
+				if (hash_used) {
+					throw 1;
+				}
+				hash_used = true;
+
+				if (location.hash === "") {
+					throw 1;
+				}
+
+				const num16_string = location.hash.slice(1);
+				const num = parseInt(num16_string, 16);
+				const num_string = num.toString();
+				if (Number.isNaN(num) || num_string.length < 2) {
+					throw 1;
+				}
+
+				spot_count = parseInt(num_string[num_string.length - 1]);
+				color_count = parseInt(num_string[num_string.length - 2]);
+				if (spot_count === 0 || color_count === 0) {
+					color_count = 5;
+					spot_count = 5;
+					throw 1;
+				}
+
+				let question_from_hash = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+				for (let i = 1; i <= num_string.length - 2; i++) {
+					question_from_hash[spot_count - i] = parseInt(num_string[num_string.length - 2 - i]);
+					if (question_from_hash[spot_count - i] >= color_count) {
+						color_count = 5;
+						spot_count = 5;
+						throw 1;
+					}
+				}
+
+				document.getElementById("head").innerHTML = "Chromle&nbsp;&nbsp;Someone wants to test you with this question.";
+				question = question_from_hash;
+				is_shared = true;
+
+				if (spot_count !== color_count) {
+					is_spot_color_sync = false;
+					document.getElementById("spot_color_sync").checked = false;
+					document.getElementById("spot_count").disabled = false;
+					document.getElementById("spot_count_label").style.color = "";
+				}
+			}
+			catch (e) {
+				for (let i = 0; i < spot_count; i++) {
+					question[i] = Math.floor((Math.random() * color_count));
+				}
+				document.getElementById("head").innerHTML = "Chromle";
+				is_shared = false;
+			}
+			document.getElementById("answer").innerHTML = "";
+			document.getElementById("answer_region").innerHTML = "1:";
+			document.getElementById("share").hidden = true;
+			document.getElementById("sharing_text_question").innerHTML = "";
+			round = 0;
+			now_num = 0;
+			answer_hidden = true;
+			if_success = false;
+			document.getElementById("check_answer").innerHTML = "Show Answer";
+			document.getElementById("color_count").selectedIndex = color_count - 1;
+			document.getElementById("spot_count").selectedIndex = spot_count - 1;
+			set_buttons();
+			set_rules();
+			answers_memory_info = [];
+			answers_memory_data = [];
+			start_time = Date.now();
+		}
+
+		function show_answer() {
+			let content = "";
+			let button_content;
+			if (!answer_hidden) {
+				if (is_shared) {
+					content = "Chromle&nbsp;&nbsp;Someone wants to test you with this question.";
+				}
+				else {
+					content = "Chromle";
+				}
+				button_content = "Show Answer";
+			}
+			if (answer_hidden) {
+				for (let i = 0; i < spot_count; i++) {
+					content += " " + colors[question[i]];
+				}
+				button_content = "Hide Answer";
+			}
+			document.getElementById("head").innerHTML = content;
+			document.getElementById("check_answer").innerHTML = button_content;
+			answer_hidden = !answer_hidden;
+		}
+
+		function switch_char_color() {
+			use_emoji_color = !use_emoji_color;
+
+			if (!use_emoji_color) {
+				colors = ["Red", "Green", "Yellow", "Blue", "Purple", "Orange", "Brown", "black", "White"];
+				example_question = ["Red", "Yellow", "Red", "Green", "Green", "Blue", "Orange", "Green", "White"];
+				example_answer = ["Yellow", "Yellow", "Blue", "Green", "Purple", "Green", "Red", "Green", "Purple"];
+			}
+			else {
+				colors = ["🟥", "🟩", "🟨", "🟦", "🟪", "🟧", "🟫", "⬛", "⬜"];
+				example_question = ["🟥", "🟨", "🟥", "🟩", "🟩", "🟦", "🟧", "🟩", "⬜"];
+				example_answer = ["🟨", "🟨", "🟦", "🟩", "🟪", "🟩", "🟥", "🟩", "🟪"];
+			}
+			for (let i = 0; i < color_count; i++) {
+				document.getElementById(i.toString()).innerHTML = colors[i];
+			}
+			for (let i = 1; i <= round; i++) {
+				document.getElementById("a_" + i).innerHTML = i + ": " + answers_memory_data[i - 1].map(val => colors[val]).join(" ");
+			}
+			document.getElementById("answer_region").innerHTML = (round + 1) + ": " + answers.slice(0, now_num).map(val => colors[val]).join(" ");
+
+			if (!answer_hidden) {
+				let content = "";
+				for (let i = 0; i < spot_count; i++) {
+					content += " " + colors[question[i]];
+				}
+				document.getElementById("head").innerHTML = content;
+			}
+
+			set_rules();
+		}
+
+		function set_rules() {
+			let i;
+			const example_spot = [0, 0, 0, 1, 2, 2, 2, 2, 3, 3];
+			const example_num = [0, 0, 0, 0, 1, 0, 2, 2, 2, 2];
+
+			let content1 = "\"";
+			for (i = 0; i < (color_count-1); i++) {
+				content1 += colors[i] + ", ";
+			}
+			content1 += colors[i] + "\"";
+			document.getElementById("rule1").innerHTML = "Rule: There are " + spot_count + " spots in total. In every spot, one of the " + color_count + " colours of " + content1 + " will be generated randomly. We need to figure out what the generated result is.";
+
+			let content2 = "For example, if it generates \"";
+			for (i = 0; i < (spot_count-1); i++) {
+				content2 += example_question[i] + ", ";
+			}
+			content2 += example_question[i] + "\", and we guess \"";
+			for (i = 0; i < (spot_count-1); i++) {
+				content2 += example_answer[i] + ", ";
+			}
+			content2 += example_answer[i] + "\", it will show \"" + example_spot[spot_count] + " spot(s) with the correct colour. " + example_num[spot_count] + " colour(s) in the correct amount\".";
+			document.getElementById("rule2").innerHTML = content2;
+			document.getElementById("rule3").innerHTML = "When it shows \"" + spot_count + " spot(s) with the correct colour\", you win!";
+		}
+
+		function set_buttons() {
+			document.getElementById("buttons").innerHTML = colors.slice(0, color_count).map(
+				(val, idx) => `<button id="${idx}" onclick="choose(${idx})">${val}</button>`
+			).join(" ");
+		}
+
+		function show_or_hide_rules() {
+			const rule_element = document.getElementById("rules");
+			const rule_button = document.getElementById("check_rules");
+
+			if (rule_element.hidden) {
+				rule_element.hidden = false;
+				rule_button.innerHTML = "Hide Rules";
+			}
+			else {
+				rule_element.hidden = true;
+				rule_button.innerHTML = "Show Rules";
+			}
+		}
+
+		function set_color_count(value) {
+			value = parseInt(value);
+			color_count = value;
+			if (is_spot_color_sync) {
+				spot_count = color_count;
+			}
+			refresh();
+		}
+
+		function set_spot_count(value) {
+			value = parseInt(value);
+			spot_count = value;
+			refresh();
+		}
+
+		function set_spot_color_count_synchronize(value) {
+			if (value !== is_spot_color_sync) {
+				is_spot_color_sync = value;
+				if (is_spot_color_sync) {
+					document.getElementById("spot_count").disabled = true;
+					document.getElementById("spot_count_label").style.color = "gray";
+					if (spot_count !== color_count) {
+						spot_count = color_count;
+						refresh();
+					}
+				}
+				else {
+					document.getElementById("spot_count").disabled = false;
+					document.getElementById("spot_count_label").style.color = "";
+				}
+			}
+		}
+	</script>
 </head>
 <body>
-    <div>
-        <h1 id="head"></h1>
-        <div style="font-size: 30%" id="rules">
-            <div id="rule1"></div>
-            <div id="rule1_5"></div>
-            <div id="rule2"></div>
-            <div id="rule3" style="font-weight: bold;"></div>
-        </div>
-        <p id="answer"></p>
-        <p></p>
-        <p id="answer_region">1:</p>
-        <p id="share"></p>
-        <p id="buttons">
-        </p>
-        <p>
-            <button onclick="submit()">Submit</button>
-            <button onclick="del()">Delete</button>
-            <button onclick="refresh()">New Game</button>
-            <button onclick="show_answer()" id="check_answer"></button>
-        </p>
-        <details>
-        	<summary onclick="more()" id="more_button"></summary>
-        	<div style="width: 100%; padding: 10px; border: 1px solid; border-color: black; font-size: 70%; margin-bottom:50px">
-		        <p style="margin: 0px">
-		            <button onclick="switch_char_color()" style="margin-right: 20px;">Shift the colour as words or emojis</button>
-		            <button onclick="show_rules()" id="check_rules">Hide Rules</button>
-		        </p>
-		        <p style="margin-bottom: 0;">
-		            <button onclick="share_input()">Make A Question</button>
-		        </p>
-		        <p style="margin-top: 0; font-size: 100%">Create a new question from the currently entered answer for sharing. The number of spots of the question must be equal to the number of spots currently set.</p>
-		        <div>
-			        <p style="margin-bottom: 0;" >
-			            
-			            <select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
-			                <option>1</option>
-			                <option>2</option>
-			                <option>3</option>
-			                <option>4</option>
-			                <option>5</option>
-			                <option>6</option>
-			                <option>7</option>
-			                <option>8</option>
-			                <option>9</option>
-			            </select>
-                        <label for="color_count">colours</label>
-			        </p>
-			        <p style="margin: 0">
-			            
-			            <select id="position_count" style="font-size: 100%" onchange="set_position_count(this.value)">
-			                <option>1</option>
-			                <option>2</option>
-			                <option>3</option>
-			                <option>4</option>
-			                <option>5</option>
-			                <option>6</option>
-			                <option>7</option>
-			                <option>8</option>
-			                <option>9</option>
-			            </select>
-                        <label for="position_count">spots</label>
-			        </p>
-			    </div>
-			    <p style="margin: 0; font-size: 100%">Tip: It will be more interesting that the number of colours is equal to the number of spots.</p>
+	<div>
+		<h1 id="head"></h1>
+		<div style="font-size: 30%" id="rules">
+			<div id="rule1"></div>
+			<div id="rule1_5"></div>
+			<div id="rule2"></div>
+			<div id="rule3"></div>
+		</div>
+		<p id="answer"></p>
+		<p></p>
+		<p id="answer_region">1:</p>
+		<div id="share" style="font-size: 100%" hidden>
+			<div id="sharing_text_result" style="border: 1px solid black; font-size: 100%; padding: 10px; margin-bottom: 0">
+			</div>
+			<button id="copy_btn" style="margin-top: 0" onclick="copy_for_sharing()">Click to share this question</button>
+		</div>
+		<p id="sharing_text_question"></p>
+		<p id="buttons">
+		</p>
+		<p>
+			<button onclick="submit()">Submit</button>
+			<button onclick="del()">Delete</button>
+			<button onclick="refresh()">New Game</button>
+			<button onclick="show_answer()" id="check_answer"></button>
+		</p>
+		<details>
+			<summary></summary>
+			<div style="padding: 10px; border: 1px solid black; font-size: 70%;">
+				<p style="margin: 0">
+					<button onclick="switch_char_color()" style="margin-right: 20px">Shift the colour as words or emojis</button>
+					<button onclick="show_or_hide_rules()" id="check_rules">Hide Rules</button>
+				</p>
+				<p style="margin-bottom: 0">
+					<button onclick="share_input()">Make A Question</button>
+				</p>
+				<p style="margin-top: 0; font-size: 100%">Create a new question from the currently entered answer for sharing. The number of spots of the question must be equal to the number of spots currently set.</p>
+				<hr>
+				<div>
+					<p style="margin: 0.5em 0; font-size: 60%">
+						<select id="color_count" style="font-size: 100%" onchange="set_color_count(this.value)">
+							<option>1</option>
+							<option>2</option>
+							<option>3</option>
+							<option>4</option>
+							<option>5</option>
+							<option>6</option>
+							<option>7</option>
+							<option>8</option>
+							<option>9</option>
+						</select>
+						<label for="color_count">colours</label>
+						<input type="checkbox" id="spot_color_sync" style="transform: scale(175%); margin-left: 1.25em"
+							   onchange="set_spot_color_count_synchronize(this.checked)" checked>
+						<label for="spot_color_sync">The number of colours same as the number of spots</label>
+					</p>
+					<p style="margin: 0.5em 0; font-size: 60%">
+						<select id="spot_count" style="font-size: 100%" onchange="set_spot_count(this.value)" disabled>
+							<option>1</option>
+							<option>2</option>
+							<option>3</option>
+							<option>4</option>
+							<option>5</option>
+							<option>6</option>
+							<option>7</option>
+							<option>8</option>
+							<option>9</option>
+						</select>
+						<label for="spot_count" id="spot_count_label" style="color: gray">spots</label>
+					</p>
+				</div>
+				<p style="margin: 0; font-size: 100%">Tip: It will be more interesting when the number of colours is equal to the number of spots.</p>
+			</div>
+		</details>
+	</div>
 
-	    	</div>
-        </details>
-    </div>
-    <script>
-    	ban_double_click();
-    	document.getElementById("more_button").innerHTML="More";
-    	document.getElementById("rule1_5").innerHTML="Every time you guess, you will get two pieces of information:<ol><li>The number of spots with the correct answer;</li><li>The number of colours in the correct amount. (Except the colour with an amount 0)</li></ol>";
-        refresh();
-        // {
-        // 	let para = document.getElementById("rules");
-        // 	para.setAttribute("hidden", "hidden");
-        // 	para.removeAttribute("hidden");
-        // }
+	<footer style="color: gray">
+		<br>
+		<p>
+			Copyright © 2022<span id="copyright_year"></span> SuperDexin. All rights reserved.<br>
+			Created by <a class="link" href="https://github.com/SuperDexin">@SuperDexin</a><br>
+			Special Thanks to the Collabrator <a class="link" href="https://github.com/plazum">@plazum</a><br>
+			<a class="link" href="https://github.com/SuperDexin/A-Little-Game">https://github.com/SuperDexin/A-Little-Game</a>
+		</p>
+	</footer>
 
-    </script>
+
+	<script>
+		document.getElementById("rule1_5").innerHTML = "Every time you guess, you will get two pieces of information:<ol><li>The number of spots with the correct answer;</li><li>The number of colours in the correct amount. (Except the colour with an amount 0)</li></ol>";
+		{
+			const d = new Date();
+			const n = d.getFullYear();
+			if (n > 2022) {
+				document.getElementById("copyright_year").innerHTML = "-" + n;
+			}
+			// document.getElementById("copyright").innerHTML=`Copyright © 2022${content} SuperDexin. All rights reserved.<br>`
+			// + "Created by <a href=\"https://github.com/SuperDexin\" style=\"color: gray; text-decoration: none\">@SuperDexin</a><br>"
+			// + "Special Thanks to the Collabrator <a href=\"https://github.com/plazum\" style=\"color: gray; text-decoration: none\">@plazum</a><br>"
+			// + "<a href=\"https://github.com/SuperDexin/A-Little-Game\" style=\"color: gray; text-decoration: none\">https://github.com/SuperDexin/A-Little-Game</a>"
+		}
+
+		refresh();
+		// {
+		// 	let para = document.getElementById("rules");
+		// 	para.setAttribute("hidden", "hidden");
+		// 	para.removeAttribute("hidden");
+		// }
+
+	</script>
 </body>
 </html>
