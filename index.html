@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -525,6 +526,10 @@
 					</p>
 				</div>
 				<p style="margin: 0; font-size: 100%">友情提示：颜色个数与位置个数相等会比较好玩</p>
+				<hr>
+				<p style="margin: 0">
+					<a style="font-size: 100%; color: black" id="shift_lang">转到英文版 / Turn to English</a>
+				</p>
 			</div>
 		</details>
 	</div>
@@ -552,6 +557,17 @@
 			// + "Created by <a href=\"https://github.com/SuperDexin\" style=\"color: gray; text-decoration: none\">@SuperDexin</a><br>"
 			// + "Special Thanks to the Collabrator <a href=\"https://github.com/plazum\" style=\"color: gray; text-decoration: none\">@plazum</a><br>"
 			// + "<a href=\"https://github.com/SuperDexin/A-Little-Game\" style=\"color: gray; text-decoration: none\">https://github.com/SuperDexin/A-Little-Game</a>"
+		}
+
+		{
+			let url = base_url;
+			if (url.match(/\/en/i) != null){
+				url = url.replace('en', "");
+			}
+			else{
+				url = url + (url.match(/\/$/) ? 'en' : '/en');
+			}
+			document.getElementById("shift_lang").setAttribute("href", url);
 		}
 
 		refresh();
